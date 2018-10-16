@@ -191,7 +191,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Server Address</string>
+               <string>&amp;Product ID</string>
               </property>
               <property name="buddy">
                <cstring>leUrl</cstring>

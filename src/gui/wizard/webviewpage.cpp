@@ -43,11 +43,8 @@ void WebViewPage::initializePage() {
     if (_ocWizard->registration()) {
         url = "https://nextcloud.com/register";
     } else {
-        url = _ocWizard->ocUrl();
-        if (!url.endsWith('/')) {
-            url += "/";
-        }
-        url += "index.php/login/flow";
+        url = QString("https://%1.securium.ch/cloudsecurium").arg(_ocWizard->ocUrl());
+        url += "/index.php/login/flow";
     }
     qCInfo(lcWizardWebiewPage()) << "Url to auth at: " << url;
     _webView->setUrl(QUrl(url));

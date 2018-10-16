@@ -71,7 +71,6 @@ OwncloudSetupPage::OwncloudSetupPage(QWidget *parent)
 
     slotUrlChanged(QLatin1String("")); // don't jitter UI
     connect(_ui.leUrl, &QLineEdit::textChanged, this, &OwncloudSetupPage::slotUrlChanged);
-    connect(_ui.leUrl, &QLineEdit::editingFinished, this, &OwncloudSetupPage::slotUrlEditFinished);
 
     addCertDial = new AddCertificateDialog(this);
 
@@ -272,7 +271,7 @@ int OwncloudSetupPage::nextId() const
 QString OwncloudSetupPage::url() const
 {
     QString url = _ui.leUrl->fullText().simplified();
-    return url;
+    return QString("https://%1.securium.ch/cloudsecurium").arg(url);
 }
 
 bool OwncloudSetupPage::validatePage()
@@ -346,7 +345,7 @@ void OwncloudSetupPage::setErrorString(const QString &err, bool retryHTTPonly)
         }
 
         _ui.errorLabel->setVisible(true);
-        _ui.errorLabel->setText(err);
+        _ui.errorLabel->setText("Failed to connect to CloudSecurium. Please enter valid product ID.");
     }
     _checking = false;
     emit completeChanged();

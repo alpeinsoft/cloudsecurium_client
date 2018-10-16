@@ -1061,9 +1061,16 @@ void AccountSettings::slotAccountStateChanged()
             _model->slotUpdateFolderState(folder);
         }
 
-        QString server = QString::fromLatin1("<a href=\"%1\">%2</a>")
+        /* QString server = QString::fromLatin1("<a href=\"%1\">%2</a>")
                              .arg(Utility::escape(account->url().toString()),
-                                 Utility::escape(safeUrl.toString()));
+                                 Utility::escape(safeUrl.toString()));*/
+        QString url = account->url().toString();
+        QString id = url.mid(QString("https://").length(),url.length()
+            - QString("https://").length()
+            - QString(".securium.ch/cloudsecurium").length());
+
+    QString server = QString::fromLatin1("<a href=\"%1\">%2</a>")
+        .arg(Utility::escape(account->url().toString()), id);
         QString serverWithUser = server;
         if (AbstractCredentials *cred = account->credentials()) {
             QString user = account->davDisplayName();

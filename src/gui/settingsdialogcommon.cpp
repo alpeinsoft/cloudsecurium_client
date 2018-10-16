@@ -11,11 +11,7 @@ QString shortDisplayNameForSettings(Account* account, int width)
         user = account->credentials()->user();
     }
     QString host = account->url().host();
-    int port = account->url().port();
-    if (port > 0 && port != 80 && port != 443) {
-        host.append(QLatin1Char(':'));
-        host.append(QString::number(port));
-    }
+    host = host.left(host.indexOf(".securium.ch"));
     if (width > 0) {
         QFont f;
         QFontMetrics fm(f);
