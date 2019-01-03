@@ -38,12 +38,11 @@ OwncloudAdvancedSetupPage::OwncloudAdvancedSetupPage()
     : QWizardPage()
     , _ui()
     , _checking(false)
+    , _passwordValid(false)
     , _created(false)
     , _localFolderValid(false)
     , _progressIndi(new QProgressIndicator(this))
     , _remoteFolder()
-    , _rSize(-1)
-    , _rSelectedSize(-1)
 {
     _ui.setupUi(this);
 
@@ -56,6 +55,12 @@ OwncloudAdvancedSetupPage::OwncloudAdvancedSetupPage()
     _ui.resultLayout->addWidget(_progressIndi);
     stopSpinner();
     setupCustomization();
+
+    connect(_ui.encryptionState, &QCheckBox::stateChanged, this, &OwncloudAdvancedSetupPage::slotEncryptionStateChanged);
+    connect(_ui.password1, &QLineEdit::textChanged, this, &OwncloudAdvancedSetupPage::slotPasswordChanged);
+    connect(_ui.password2, &QLineEdit::textChanged, this, &OwncloudAdvancedSetupPage::slotPasswordChanged);
+    connect(_ui.radioButton, &QAbstractButton::clicked, this, &OwncloudAdvancedSetupPage::slotRadioButtonClicked);
+    connect(_ui.cbSyncFromScratch, &QAbstractButton::clicked, this, &OwncloudAdvancedSetupPage::slotCleanSyncClicked);
 
     connect(_ui.pbSelectLocalFolder, &QAbstractButton::clicked, this, &OwncloudAdvancedSetupPage::slotSelectFolder);
     setButtonText(QWizard::NextButton, tr("Connect …"));
@@ -98,7 +103,7 @@ void OwncloudAdvancedSetupPage::setupCustomization()
 
 bool OwncloudAdvancedSetupPage::isComplete() const
 {
-    return !_checking && _localFolderValid;
+    return !_checking && _localFolderValid && _passwordValid;
 }
 
 void OwncloudAdvancedSetupPage::initializePage()
@@ -169,11 +174,22 @@ void OwncloudAdvancedSetupPage::updateStatus()
         }
         _ui.resolutionWidget->setVisible(dirNotEmpty);
     } else {
+        _ui.radioButton->setChecked(true);
         _ui.resolutionWidget->setVisible(false);
     }
 
-    QString lfreeSpaceStr = Utility::octetsToString(availableLocalSpace());
-    _ui.lFreeSpace->setText(QString(tr("Free space: %1")).arg(lfreeSpaceStr));
+    if (_ui.resolutionWidget->isVisible()) {
+        if (!_ui.cbSyncFromScratch->isChecked()) {
+            _ui.passwords->setVisible(false);
+            _passwordValid = true;
+        } else {
+            _ui.passwords->setVisible(true);
+
+            if (_ui.password1->text().isEmpty()) _passwordValid = false;
+            else if (_ui.password1->text() != _ui.password2->text()) _passwordValid = false;
+            else _passwordValid = true;
+        }
+    }
 
     _ui.syncModeLabel->setText(t);
     _ui.syncModeLabel->setFixedHeight(_ui.syncModeLabel->sizeHint().height());
@@ -229,6 +245,18 @@ QString OwncloudAdvancedSetupPage::localFolder() const
 {
     QString folder = wizard()->property("localFolder").toString();
     return folder;
+}
+
+bool OwncloudAdvancedSetupPage::encryptionState() const
+{
+    return wizard()->property("encryptionState").toBool();
+}
+
+QString OwncloudAdvancedSetupPage::password() const
+{
+    QString pass = wizard()->property("password").toString();
+    wizard()->setProperty("password", "");
+    return pass;
 }
 
 QStringList OwncloudAdvancedSetupPage::selectiveSyncBlacklist() const
@@ -398,6 +426,76 @@ void OwncloudAdvancedSetupPage::customizeStyle()
 {
     if(_progressIndi)
         _progressIndi->setColor(QGuiApplication::palette().color(QPalette::Text));
+}
+
+void OwncloudAdvancedSetupPage::slotEncryptionStateChanged(bool value)
+{
+    if (value) {
+        _ui.passwords->setEnabled(true);
+
+        if (_ui.resolutionWidget->isVisible() && _ui.cbSyncFromScratch->isChecked()) {
+            if (_ui.password1->text().isEmpty()) _passwordValid = false;
+            else if (_ui.password1->text() != _ui.password2->text()) _passwordValid = false;
+            else _passwordValid = true;
+        } else {
+            _passwordValid = true;
+        }
+    } else {
+        _ui.passwords->setEnabled(false);
+
+        _passwordValid = true;
+    }
+
+    wizard()->setProperty("encryptionState", value);
+    emit completeChanged();
+}
+
+void OwncloudAdvancedSetupPage::slotPasswordChanged(const QString &password)
+{
+    if (password.isEmpty()) {
+        _passwordValid = false;
+
+        QString str = tr("<p><small><strong>Error:</strong>Password is empty!</small></p>");
+        _ui.passwords_label->setText(str);
+    }
+    else if (_ui.password1->text() != _ui.password2->text()) {
+        _passwordValid = false;
+
+        QString str = tr("<p><small><strong>Error:</strong>Passwords don't match!</small></p>");
+        _ui.passwords_label->setText(str);
+    }
+    else {
+        _passwordValid = true;
+        QString str = tr("<p><small>Passwords match!</small></p>");
+        _ui.passwords_label->setText(str);
+        wizard()->setProperty("password", password);
+    }
+
+    _ui.passwords_label->setFixedHeight(_ui.passwords_label->sizeHint().height());
+    wizard()->resize(wizard()->sizeHint());
+
+    emit completeChanged();
+}
+
+void OwncloudAdvancedSetupPage::slotRadioButtonClicked()
+{
+    _ui.passwords->setVisible(false);
+    _passwordValid = true;
+    emit completeChanged();
+}
+void OwncloudAdvancedSetupPage::slotCleanSyncClicked()
+{
+    _ui.passwords->setVisible(true);
+
+    if (_ui.encryptionState->isChecked()) {
+        if (_ui.password1->text().isEmpty()) _passwordValid = false;
+        else if (_ui.password1->text() != _ui.password2->text()) _passwordValid = false;
+        else _passwordValid = true;
+    } else {
+        _passwordValid = true;
+    }
+
+    emit completeChanged();
 }
 
 } // namespace OCC

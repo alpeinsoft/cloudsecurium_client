@@ -1134,6 +1134,19 @@ void Folder::slotAboutToRestoreBackup(bool *restore)
 }
 
 
+bool FolderDefinition::encryptionState() const
+{
+    return m_encryptionState;
+}
+void FolderDefinition::setEncryptionState(bool value)
+{
+    Q_ASSERT(!localPath.isEmpty());
+
+    if (value == m_encryptionState) return;
+
+    m_encryptionState = value;
+}
+
 void FolderDefinition::save(QSettings &settings, const FolderDefinition &folder)
 {
     settings.beginGroup(FolderMan::escapeAlias(folder.alias));
@@ -1148,6 +1161,9 @@ void FolderDefinition::save(QSettings &settings, const FolderDefinition &folder)
         settings.setValue(QLatin1String("navigationPaneClsid"), folder.navigationPaneClsid);
     else
         settings.remove(QLatin1String("navigationPaneClsid"));
+
+    settings.setValue(QLatin1String("encryptionState"), folder.encryptionState());
+
     settings.endGroup();
 }
 
@@ -1157,6 +1173,7 @@ bool FolderDefinition::load(QSettings &settings, const QString &alias,
     settings.beginGroup(alias);
     folder->alias = FolderMan::unescapeAlias(alias);
     folder->localPath = settings.value(QLatin1String("localPath")).toString();
+    folder->setEncryptionState(settings.value(QLatin1String("encryptionState")).toBool());
     folder->journalPath = settings.value(QLatin1String("journalPath")).toString();
     folder->targetPath = settings.value(QLatin1String("targetPath")).toString();
     folder->paused = settings.value(QLatin1String("paused")).toBool();

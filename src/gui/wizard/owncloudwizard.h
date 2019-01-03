@@ -69,6 +69,9 @@ public:
     QStringList selectiveSyncBlacklist() const;
     bool isConfirmBigFolderChecked() const;
 
+    bool encryptionState() const;
+    QString password() const;
+
     void enableFinishOnResultWidget(bool enable);
 
     void displayError(const QString &, bool retryHTTPonly);

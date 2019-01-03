@@ -102,6 +102,7 @@ OwncloudWizard::OwncloudWizard(QWidget *parent)
     setSubTitleFormat(Qt::RichText);
     setButtonText(QWizard::CustomButton1, tr("Skip folders configuration"));
 
+    this->setProperty("encryptionState", true);
 
     // Connect styleChanged events to our widgets, so they can adapt (Dark-/Light-Mode switching)
     connect(this, &OwncloudWizard::styleChanged, _setupPage, &OwncloudSetupPage::slotStyleChanged);
@@ -137,6 +138,16 @@ QStringList OwncloudWizard::selectiveSyncBlacklist() const
 bool OwncloudWizard::isConfirmBigFolderChecked() const
 {
     return _advancedSetupPage->isConfirmBigFolderChecked();
+}
+
+bool OwncloudWizard::encryptionState() const
+{
+    return _advancedSetupPage->encryptionState();
+}
+
+QString OwncloudWizard::password() const
+{
+    return _advancedSetupPage->password();
 }
 
 QString OwncloudWizard::ocUrl() const

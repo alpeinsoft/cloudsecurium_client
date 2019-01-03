@@ -649,9 +649,12 @@ void OwncloudSetupWizard::slotAssistantFinished(int result)
         if (!startFromScratch || ensureStartFromScratch(localFolder)) {
             qCInfo(lcWizard) << "Adding folder definition for" << localFolder << _remoteFolder;
             FolderDefinition folderDefinition;
-            folderDefinition.localPath = localFolder;
+            folderDefinition.localPath = localFolder;            
             folderDefinition.targetPath = FolderDefinition::prepareTargetPath(_remoteFolder);
             folderDefinition.ignoreHiddenFiles = folderMan->ignoreHiddenFiles();
+
+            folderDefinition.setEncryptionState(_ocWizard->encryptionState());
+
             if (folderMan->navigationPaneHelper().showInExplorerNavigationPane())
                 folderDefinition.navigationPaneClsid = QUuid::createUuid();
 

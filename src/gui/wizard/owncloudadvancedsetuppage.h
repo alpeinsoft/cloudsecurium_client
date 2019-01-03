@@ -40,6 +40,10 @@ public:
     int nextId() const override;
     bool validatePage() override;
     QString localFolder() const;
+
+    bool encryptionState() const;
+    QString password() const;
+
     QStringList selectiveSyncBlacklist() const;
     bool isConfirmBigFolderChecked() const;
     void setRemoteFolder(const QString &remoteFolder);
@@ -58,6 +62,10 @@ private slots:
     void slotSyncEverythingClicked();
     void slotSelectiveSyncClicked();
     void slotQuotaRetrieved(const QVariantMap &result);
+    void slotEncryptionStateChanged(bool value);
+    void slotPasswordChanged(const QString &password);
+    void slotRadioButtonClicked();
+    void slotCleanSyncClicked();
 
 private:
     void setupCustomization();
@@ -73,6 +81,7 @@ private:
     Ui_OwncloudAdvancedSetupPage _ui;
     bool _checking;
     bool _created;
+    bool _passwordValid;
     bool _localFolderValid;
     QProgressIndicator *_progressIndi;
     QString _remoteFolder;
