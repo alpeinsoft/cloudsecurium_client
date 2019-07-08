@@ -68,6 +68,7 @@ private slots:
     void slotCleanSyncClicked();
 
 private:
+    void updateEncryptionUi(const QString &folder);
     void setupCustomization();
     void updateStatus();
     bool dataChanged();

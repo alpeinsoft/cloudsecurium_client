@@ -32,6 +32,8 @@
 #include "creds/abstractcredentials.h"
 #include "networkjobs.h"
 
+#include "cryptfs_utils.h"
+
 namespace OCC {
 
 OwncloudAdvancedSetupPage::OwncloudAdvancedSetupPage()
@@ -117,6 +119,7 @@ void OwncloudAdvancedSetupPage::initializePage()
     // Update the local folder - this is not guaranteed to find a good one
     QString goodLocalFolder = FolderMan::instance()->findGoodPathForNewSyncFolder(localFolder(), serverUrl());
     wizard()->setProperty("localFolder", goodLocalFolder);
+    updateEncryptionUi(goodLocalFolder);
 
     // call to init label
     updateStatus();
@@ -329,6 +332,7 @@ void OwncloudAdvancedSetupPage::slotSelectFolder()
         _ui.pbSelectLocalFolder->setText(dir);
         wizard()->setProperty("localFolder", dir);
         updateStatus();
+        updateEncryptionUi(dir);
     }
 
     qint64 rSpace = _ui.rSyncEverything->isChecked() ? _rSize : _rSelectedSize;
@@ -382,6 +386,17 @@ void OwncloudAdvancedSetupPage::slotSelectiveSyncClicked()
         }
         wizard()->setProperty("blacklist", _selectiveSyncBlacklist);
     }
+}
+
+void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
+{
+    LOG("Soon I'll updateEncryptionUi according to: %s\n", folder.toLocal8Bit().data());
+    if (is_encrypted(folder))
+        LOG("It is already encrypted\n");
+    else if (can_be_encrypted(folder))
+        LOG("It can be encrypted\n");
+    else
+        LOG("It can't be encrypted\n");
 }
 
 void OwncloudAdvancedSetupPage::slotSyncEverythingClicked()
