@@ -183,7 +183,7 @@ void OwncloudAdvancedSetupPage::updateStatus()
 
     if (_ui.resolutionWidget->isVisible()) {
         if (!_ui.cbSyncFromScratch->isChecked()) {
-            _ui.passwords->setVisible(false);
+            // _ui.passwords->setVisible(false);
             _passwordValid = true;
         } else {
             _ui.passwords->setVisible(true);
@@ -390,13 +390,36 @@ void OwncloudAdvancedSetupPage::slotSelectiveSyncClicked()
 
 void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
 {
+    _ui.password1->clear();
+    _ui.password2->clear();
+    _ui.encryptionState->setChecked(false);
+    wizard()->setProperty("encryptionState", false);
+
+    if (_ui.cbSyncFromScratch->isChecked()) {
+        _ui.encryptionState->setEnabled(true);
+        _ui.passwords->setEnabled(true);
+        emit completeChanged();
+        return;
+    }
+
     LOG("Soon I'll updateEncryptionUi according to: %s\n", folder.toLocal8Bit().data());
-    if (is_encrypted(folder))
+    if (is_encrypted(folder)) {
         LOG("It is already encrypted\n");
-    else if (can_be_encrypted(folder))
+        wizard()->setProperty("encryptionState", true);
+        _ui.encryptionState->setEnabled(false);
+        _ui.encryptionState->setChecked(true);
+        _ui.password1->setEnabled(true);
+        _ui.password2->setEnabled(true);
+    } else if (can_be_encrypted(folder)) {
         LOG("It can be encrypted\n");
-    else
+        _ui.encryptionState->setEnabled(true);
+        _ui.passwords->setEnabled(true);
+    } else {
         LOG("It can't be encrypted\n");
+        _ui.encryptionState->setEnabled(false);
+        _ui.passwords->setEnabled(false);
+    }
+    emit completeChanged();
 }
 
 void OwncloudAdvancedSetupPage::slotSyncEverythingClicked()
@@ -467,6 +490,7 @@ void OwncloudAdvancedSetupPage::slotEncryptionStateChanged(bool value)
 
 void OwncloudAdvancedSetupPage::slotPasswordChanged(const QString &password)
 {
+    LOG("Password changed!\n");
     if (password.isEmpty()) {
         _passwordValid = false;
 
@@ -494,22 +518,13 @@ void OwncloudAdvancedSetupPage::slotPasswordChanged(const QString &password)
 
 void OwncloudAdvancedSetupPage::slotRadioButtonClicked()
 {
-    _ui.passwords->setVisible(false);
-    _passwordValid = true;
+    updateEncryptionUi(wizard()->property("localFolder").toString());
     emit completeChanged();
 }
+
 void OwncloudAdvancedSetupPage::slotCleanSyncClicked()
 {
-    _ui.passwords->setVisible(true);
-
-    if (_ui.encryptionState->isChecked()) {
-        if (_ui.password1->text().isEmpty()) _passwordValid = false;
-        else if (_ui.password1->text() != _ui.password2->text()) _passwordValid = false;
-        else _passwordValid = true;
-    } else {
-        _passwordValid = true;
-    }
-
+    updateEncryptionUi(QString());
     emit completeChanged();
 }
 
