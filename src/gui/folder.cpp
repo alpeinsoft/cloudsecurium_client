@@ -1,4 +1,4 @@
-/*
+    /*
  * Copyright (C) by Duncan Mac-Vicar P. <duncan@kde.org>
  * Copyright (C) by Daniel Molkentin <danimo@owncloud.com>
  * Copyright (C) by Klaas Freitag <freitag@owncloud.com>
@@ -40,6 +40,10 @@
 
 #include <QMessageBox>
 #include <QPushButton>
+#include <QtCore>
+
+#include "cryptfs_utils.h"
+
 
 namespace OCC {
 
@@ -58,7 +62,10 @@ Folder::Folder(const FolderDefinition &definition,
     , _journal(_definition.absoluteJournalPath())
     , _fileLog(new SyncRunFileLog)
     , _saveBackwardsCompatible(false)
+    , encryptedFolder(nullptr)
 {
+    if (definition.encryptionState())
+        encryptedFolder = new EncryptedFolder(definition.encryptionPath, definition.localPath, definition.password());
     _timeSinceLastSyncStart.start();
     _timeSinceLastSyncDone.start();
 
@@ -114,6 +121,7 @@ Folder::Folder(const FolderDefinition &definition,
 
 Folder::~Folder()
 {
+    delete encryptedFolder;
     // Reset then engine first as it will abort and try to access members of the Folder
     _engine.reset();
 }
@@ -1197,6 +1205,7 @@ QString FolderDefinition::prepareLocalPath(const QString &path)
     if (!p.endsWith(QLatin1Char('/'))) {
         p.append(QLatin1Char('/'));
     }
+    LOG("in prepareLocalPath: %s\n", p.toAscii().data());
     return p;
 }
 

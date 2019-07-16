@@ -28,7 +28,8 @@
 #include <QStringList>
 #include <QUuid>
 #include <set>
-#include <chrono>
+#include "cryptfs_utils.h"
+#include "encrypted_folder.h"
 
 class QThread;
 class QSettings;
@@ -53,6 +54,8 @@ public:
     {
     }
 
+    /// Path to folder with encrypted files
+    QString encryptionPath;
     /// The name of the folder in the ui and internally
     QString alias;
     /// path on local machine
@@ -140,6 +143,13 @@ public:
      * where it returns "Z:" instead of "Z:/".
      */
     QString cleanPath() const;
+
+    bool encryptionState() const;
+    void setEncryptionState(bool value, QString pass);
+
+    EncryptedFolder* encryptedFolder;
+
+    qint64 *pid = nullptr;
 
     /**
      * remote folder path

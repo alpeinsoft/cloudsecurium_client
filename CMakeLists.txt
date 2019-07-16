@@ -5,6 +5,9 @@ project(client)
 
 set(BIN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
 set(OEM_THEME_DIR "" CACHE STRING "Define directory containing a custom theme")
 if ( EXISTS ${OEM_THEME_DIR}/OEM.cmake )
      include ( ${OEM_THEME_DIR}/OEM.cmake )

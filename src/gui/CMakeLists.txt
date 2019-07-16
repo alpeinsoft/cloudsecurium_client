@@ -131,6 +131,7 @@ set(client_SRCS
     wizard/webview.cpp
     wizard/slideshow.cpp
     cryptfs_utils.cpp
+    encrypted_folder.cpp
 )
 
 IF(NOT NO_SHIBBOLETH)

@@ -393,11 +393,12 @@ void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
     _ui.password1->clear();
     _ui.password2->clear();
     _ui.encryptionState->setChecked(false);
+
     wizard()->setProperty("encryptionState", false);
 
     if (_ui.cbSyncFromScratch->isChecked()) {
         _ui.encryptionState->setEnabled(true);
-        _ui.passwords->setEnabled(true);
+        _ui.passwords->setEnabled(false);
         emit completeChanged();
         return;
     }
@@ -408,12 +409,11 @@ void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
         wizard()->setProperty("encryptionState", true);
         _ui.encryptionState->setEnabled(false);
         _ui.encryptionState->setChecked(true);
-        _ui.password1->setEnabled(true);
-        _ui.password2->setEnabled(true);
+        _ui.passwords->setEnabled(true);
     } else if (can_be_encrypted(folder)) {
         LOG("It can be encrypted\n");
         _ui.encryptionState->setEnabled(true);
-        _ui.passwords->setEnabled(true);
+        _ui.passwords->setEnabled(false);
     } else {
         LOG("It can't be encrypted\n");
         _ui.encryptionState->setEnabled(false);

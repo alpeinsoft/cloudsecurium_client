@@ -38,6 +38,8 @@
 #include "creds/abstractcredentials.h"
 #include "creds/dummycredentials.h"
 
+#include "cryptfs_utils.h"
+
 namespace OCC {
 
 OwncloudSetupWizard::OwncloudSetupWizard(QObject *parent)
@@ -642,14 +644,22 @@ void OwncloudSetupWizard::slotAssistantFinished(int result)
         // on whether a new account is activated or the existing one
         // is changed.
         auto account = applyAccountChanges();
-
-        QString localFolder = FolderDefinition::prepareLocalPath(_ocWizard->localFolder());
+        QString localFolder = _ocWizard->localFolder();
+        QString encryptedFolder = nullptr;
+        if (_ocWizard->encryptionState()) {
+            encryptedFolder = FolderDefinition::prepareLocalPath(localFolder);
+            localFolder += QString("_UNCRIPT");
+        }
+        localFolder = FolderDefinition::prepareLocalPath(localFolder);
+        LOG("localFolder is: %s\n", localFolder.toAscii().data());
 
         bool startFromScratch = _ocWizard->field("OCSyncFromScratch").toBool();
         if (!startFromScratch || ensureStartFromScratch(localFolder)) {
             qCInfo(lcWizard) << "Adding folder definition for" << localFolder << _remoteFolder;
             FolderDefinition folderDefinition;
-            folderDefinition.localPath = localFolder;            
+            LOG("create encryptedPath: %s\n", encryptedFolder.toAscii().data());
+            folderDefinition.encryptionPath = encryptedFolder;
+            folderDefinition.localPath = localFolder;
             folderDefinition.targetPath = FolderDefinition::prepareTargetPath(_remoteFolder);
             folderDefinition.ignoreHiddenFiles = folderMan->ignoreHiddenFiles();
 
