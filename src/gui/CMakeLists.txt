@@ -130,7 +130,6 @@ set(client_SRCS
     wizard/webviewpage.cpp
     wizard/webview.cpp
     wizard/slideshow.cpp
-    cryptfs_utils.cpp
     encrypted_folder.cpp
 )
 

@@ -1,18 +1,31 @@
 #include <QtCore>
 #include "encrypted_folder.h"
-#include "cryptfs_utils.h"
 
 /*
 extern "C" {
     #include "cryptfs.h"
 }
 */
-EncryptedFolder::EncryptedFolder(QString crypted_path, QString mount_path, QString password)
+EncryptedFolder::EncryptedFolder(QString mount_path)
 {
-    LOG("start dummy: %s -> %s\n : %s", crypted_path.toAscii().data(), mount_path.toAscii().data(), password.toAscii().data());
+    LOG("start dummy: %s\n", mount_path.toAscii().data());
 }
 
 EncryptedFolder::~EncryptedFolder()
 {
     LOG("kill dummy\n");
+}
+
+bool EncryptedFolder::checkKey(const QString &folder) {
+    LOG("Checking for key in %s\n", folder.toAscii().data());
+    return QDir(folder).exists(QString(".key"));
+}
+
+void EncryptedFolder::generateKey(const QString &folder) {
+    if (!QDir(folder).exists())
+        QDir(folder).mkpath(".");
+    QFile file(QDir::toNativeSeparators(QDir(folder).absolutePath()) + QDir::separator() + ".key");
+    file.open(QIODevice::WriteOnly);
+    file.close();
+    LOG("Kinda generated key in %s\n", QDir(folder).entryList(QDir::NoDotAndDotDot).join(QString(" ")).toAscii().data());
 }

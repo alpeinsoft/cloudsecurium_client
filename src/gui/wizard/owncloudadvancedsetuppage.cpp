@@ -32,7 +32,7 @@
 #include "creds/abstractcredentials.h"
 #include "networkjobs.h"
 
-#include "cryptfs_utils.h"
+#include "encrypted_folder.h"
 
 namespace OCC {
 
@@ -274,7 +274,7 @@ bool OwncloudAdvancedSetupPage::isConfirmBigFolderChecked() const
 
 bool OwncloudAdvancedSetupPage::validatePage()
 {
-    if (!_created) {
+    if (!_created || (encryptionState() && !EncryptedFolder::checkKey(localFolder()))) {
         setErrorString(QString());
         _checking = true;
         startSpinner();
@@ -404,13 +404,17 @@ void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
     }
 
     LOG("Soon I'll updateEncryptionUi according to: %s\n", folder.toLocal8Bit().data());
-    if (is_encrypted(folder)) {
+    if (EncryptedFolder::checkKey(folder)) {
         LOG("It is already encrypted\n");
         wizard()->setProperty("encryptionState", true);
         _ui.encryptionState->setEnabled(false);
         _ui.encryptionState->setChecked(true);
         _ui.passwords->setEnabled(true);
-    } else if (can_be_encrypted(folder)) {
+    } else if (!QDir(folder).exists()
+               || QDir(folder).entryInfoList(
+                   QDir::NoDotAndDotDot
+                   | QDir::AllEntries
+               ).count() == 0) {
         LOG("It can be encrypted\n");
         _ui.encryptionState->setEnabled(true);
         _ui.passwords->setEnabled(false);

@@ -38,7 +38,7 @@
 #include "creds/abstractcredentials.h"
 #include "creds/dummycredentials.h"
 
-#include "cryptfs_utils.h"
+#include "encrypted_folder.h"
 
 namespace OCC {
 
@@ -442,6 +442,15 @@ bool OwncloudSetupWizard::checkDowngradeAdvised(QNetworkReply *reply)
 
 void OwncloudSetupWizard::slotCreateLocalAndRemoteFolders(const QString &localFolder, const QString &remoteFolder)
 {
+    LOG("in slotCreate...\n");
+    if (_ocWizard->encryptionState()) {
+        EncryptedFolder::generateKey(localFolder);
+        QDir uncr(QDir::toNativeSeparators(QDir(localFolder).absolutePath())+QString("_UNCRIPT"));
+        if (uncr.exists())
+            uncr.removeRecursively();
+        else
+            uncr.mkpath(".");
+    }
     qCInfo(lcWizard) << "Setup local sync folder for new oC connection " << localFolder;
     const QDir fi(localFolder);
 
@@ -644,26 +653,20 @@ void OwncloudSetupWizard::slotAssistantFinished(int result)
         // on whether a new account is activated or the existing one
         // is changed.
         auto account = applyAccountChanges();
-        QString localFolder = _ocWizard->localFolder();
-        QString encryptedFolder = nullptr;
-        if (_ocWizard->encryptionState()) {
-            encryptedFolder = FolderDefinition::prepareLocalPath(localFolder);
-            localFolder += QString("_UNCRIPT");
-        }
-        localFolder = FolderDefinition::prepareLocalPath(localFolder);
+        QString localFolder = FolderDefinition::prepareLocalPath(_ocWizard->localFolder());
         LOG("localFolder is: %s\n", localFolder.toAscii().data());
 
         bool startFromScratch = _ocWizard->field("OCSyncFromScratch").toBool();
+
         if (!startFromScratch || ensureStartFromScratch(localFolder)) {
+            if (_ocWizard->encryptionState() && startFromScratch)
+                EncryptedFolder::generateKey(localFolder);
+
             qCInfo(lcWizard) << "Adding folder definition for" << localFolder << _remoteFolder;
             FolderDefinition folderDefinition;
-            LOG("create encryptedPath: %s\n", encryptedFolder.toAscii().data());
-            folderDefinition.encryptionPath = encryptedFolder;
             folderDefinition.localPath = localFolder;
             folderDefinition.targetPath = FolderDefinition::prepareTargetPath(_remoteFolder);
             folderDefinition.ignoreHiddenFiles = folderMan->ignoreHiddenFiles();
-
-            folderDefinition.setEncryptionState(_ocWizard->encryptionState());
 
             if (folderMan->navigationPaneHelper().showInExplorerNavigationPane())
                 folderDefinition.navigationPaneClsid = QUuid::createUuid();

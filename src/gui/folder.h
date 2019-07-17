@@ -28,7 +28,6 @@
 #include <QStringList>
 #include <QUuid>
 #include <set>
-#include "cryptfs_utils.h"
 #include "encrypted_folder.h"
 
 class QThread;
@@ -54,8 +53,6 @@ public:
     {
     }
 
-    /// Path to folder with encrypted files
-    QString encryptionPath;
     /// The name of the folder in the ui and internally
     QString alias;
     /// path on local machine
@@ -72,9 +69,6 @@ public:
     bool isClientSideEncrypted;
     /// The CLSID where this folder appears in registry for the Explorer navigation pane entry.
     QUuid navigationPaneClsid;
-
-    bool encryptionState() const;
-    void setEncryptionState(bool value);
 
     /// Saves the folder definition, creating a new settings group.
     static void save(QSettings &settings, const FolderDefinition &folder);
@@ -94,9 +88,6 @@ public:
 
     /// Returns the relative journal path that's appropriate for this folder and account.
     QString defaultJournalPath(AccountPtr account);
-
-private:
-    bool m_encryptionState = false;
 };
 
 /**
