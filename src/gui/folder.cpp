@@ -64,10 +64,7 @@ Folder::Folder(const FolderDefinition &definition,
     , _saveBackwardsCompatible(false)
     , encryptedFolder(nullptr)
 {
-    if (EncryptedFolder::checkKey(definition.localPath)) {
-        encryptedFolder = new EncryptedFolder(definition.localPath);
-        // TODO: localFolder += _UNCRYPT
-    }
+    encryptedFolder = new EncryptedFolder(definition.localPath);
     _timeSinceLastSyncStart.start();
     _timeSinceLastSyncDone.start();
 
@@ -130,19 +127,29 @@ Folder::~Folder()
 
 void Folder::checkLocalPath()
 {
-    const QFileInfo fi(_definition.localPath);
-    _canonicalLocalPath = fi.canonicalFilePath();
-#ifdef Q_OS_MAC
-    // Workaround QTBUG-55896  (Should be fixed in Qt 5.8)
-    _canonicalLocalPath = _canonicalLocalPath.normalized(QString::NormalizationForm_C);
-#endif
-    if (_canonicalLocalPath.isEmpty()) {
-        qCWarning(lcFolder) << "Broken symlink:" << _definition.localPath;
-        _canonicalLocalPath = _definition.localPath;
-    } else if (!_canonicalLocalPath.endsWith('/')) {
-        _canonicalLocalPath.append('/');
+    QFileInfo fi;
+    if (this->encryptedFolder->isRunning()) {
+        _canonicalLocalPath = QString(_definition.localPath);
+        _canonicalLocalPath.chop(1);
+        _canonicalLocalPath += QString("_UNCRYPT/");
+        fi = QFileInfo(_canonicalLocalPath);
+        _canonicalLocalPath = fi.canonicalFilePath();
+        LOG("canonicalLocalPath is now %s\n", _canonicalLocalPath.toAscii().data());
     }
-
+    else {
+        fi = QFileInfo(_definition.localPath);
+        _canonicalLocalPath = fi.canonicalFilePath();
+    #ifdef Q_OS_MAC
+        // Workaround QTBUG-55896  (Should be fixed in Qt 5.8)
+        _canonicalLocalPath = _canonicalLocalPath.normalized(QString::NormalizationForm_C);
+    #endif
+        if (_canonicalLocalPath.isEmpty()) {
+            qCWarning(lcFolder) << "Broken symlink:" << _definition.localPath;
+            _canonicalLocalPath = _definition.localPath;
+        } else if (!_canonicalLocalPath.endsWith('/')) {
+            _canonicalLocalPath.append('/');
+        }
+    }
     if (fi.isDir() && fi.isReadable()) {
         qCDebug(lcFolder) << "Checked local path ok";
     } else {
@@ -219,6 +226,11 @@ QString Folder::cleanPath() const
         cleanedPath.remove(2, 1);
 
     return cleanedPath;
+}
+
+bool Folder::encryptionState() const
+{
+    return m_encryptionState;
 }
 
 bool Folder::isBusy() const

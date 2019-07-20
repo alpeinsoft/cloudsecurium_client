@@ -136,9 +136,9 @@ public:
     QString cleanPath() const;
 
     bool encryptionState() const;
-    void setEncryptionState(bool value, QString pass);
 
     EncryptedFolder* encryptedFolder;
+    bool m_encryptionState = false;
 
     qint64 *pid = nullptr;
 

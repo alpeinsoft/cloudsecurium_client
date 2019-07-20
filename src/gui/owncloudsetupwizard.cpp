@@ -445,11 +445,10 @@ void OwncloudSetupWizard::slotCreateLocalAndRemoteFolders(const QString &localFo
     LOG("in slotCreate...\n");
     if (_ocWizard->encryptionState()) {
         EncryptedFolder::generateKey(localFolder);
-        QDir uncr(QDir::toNativeSeparators(QDir(localFolder).absolutePath())+QString("_UNCRIPT"));
+        QDir uncr(QDir::toNativeSeparators(QDir(localFolder).absolutePath())+QString("_UNCRYPT"));
         if (uncr.exists())
             uncr.removeRecursively();
-        else
-            uncr.mkpath(".");
+        uncr.mkpath(".");
     }
     qCInfo(lcWizard) << "Setup local sync folder for new oC connection " << localFolder;
     const QDir fi(localFolder);
