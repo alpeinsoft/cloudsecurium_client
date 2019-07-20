@@ -1,4 +1,5 @@
 #include <QtCore>
+#include <QInputDialog>
 #include "encrypted_folder.h"
 
 extern "C" {
@@ -27,9 +28,24 @@ EncryptedFolder::EncryptedFolder(QString local_path)
         return;
     LOG("Cryptfs: created structure successfully at addr %lu\n", this->cfs);
 
-    mount_rc = cryptfs_mount(cfs, mount_path.toAscii().data(), "1");
-    if (mount_rc)
-        return;
+    do {
+        QString password = QInputDialog::getText(
+                    nullptr,
+                    QString("Password"),
+                    QString("Password for "+local_path),
+                    QLineEdit::Password
+                    );
+        LOG("got: %s\n", password.toAscii().data());
+
+        mount_rc = cryptfs_mount(
+                    cfs,
+                    mount_path.toAscii().data(),
+                    password.toAscii().data()
+                    );
+        if (mount_rc)
+            perror("cryptfs_mount");
+        LOG("got: %d\n", mount_rc);
+    } while (mount_rc);
     LOG("Cryptfs: mount successful at %s\n", mount_path.toAscii().data());
 
     loop = new CryptfsLoop(this->cfs);
@@ -43,6 +59,8 @@ EncryptedFolder::EncryptedFolder(QString local_path)
 
 EncryptedFolder::~EncryptedFolder()
 {
+    if (!isRunning())
+        return;
     LOG("killing dummy...\n");
     LOG("after unmount %d\n", cryptfs_ummount(this->cfs));
     delete loop;
@@ -62,7 +80,7 @@ bool EncryptedFolder::checkKey(const QString &folder) {
     return QDir(folder).exists(QString(".key"));
 }
 
-void EncryptedFolder::generateKey(const QString &folder_path) {
+void EncryptedFolder::generateKey(const QString &folder_path, char* passwd) {
     QDir folder = QDir(folder_path);
     if (!folder.exists())
         folder.mkpath(".");
@@ -73,7 +91,6 @@ void EncryptedFolder::generateKey(const QString &folder_path) {
             + QDir::separator()
             + QString(".key")
             ).toAscii().data();
-    char* passwd = "1";
     cryptfs_generate_key_file(passwd, path);
     LOG("Kinda generated key in %s\n", folder.entryList(QDir::NoDotAndDotDot).join(QString(" ")).toAscii().data());
 }

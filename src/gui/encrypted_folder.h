@@ -41,7 +41,7 @@ public:
     bool isRunning();
 
     static bool checkKey(const QString &folder);
-    static void generateKey(const QString &folder);
+    static void generateKey(const QString &folder, char *password);
     static QString generateMountPath(const QString &folder);
 };
 
