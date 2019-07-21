@@ -68,7 +68,9 @@ private slots:
     void slotCleanSyncClicked();
 
 private:
+#ifdef ADD_ENCRYPTION
     void updateEncryptionUi(const QString &folder);
+#endif
     void setupCustomization();
     void updateStatus();
     bool dataChanged();

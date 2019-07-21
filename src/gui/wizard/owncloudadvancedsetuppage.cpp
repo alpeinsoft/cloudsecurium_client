@@ -32,7 +32,9 @@
 #include "creds/abstractcredentials.h"
 #include "networkjobs.h"
 
+#ifdef ADD_ENCRYPTION
 #include "encrypted_folder.h"
+#endif
 
 namespace OCC {
 
@@ -119,7 +121,15 @@ void OwncloudAdvancedSetupPage::initializePage()
     // Update the local folder - this is not guaranteed to find a good one
     QString goodLocalFolder = FolderMan::instance()->findGoodPathForNewSyncFolder(localFolder(), serverUrl());
     wizard()->setProperty("localFolder", goodLocalFolder);
+#ifdef ADD_ENCRYPTION
     updateEncryptionUi(goodLocalFolder);
+#else
+    _ui.errorLabel->setVisible(false);
+    _ui.passwords_label->setVisible(false);
+    _ui.passwords->setVisible(false);
+    _ui.encryptionState->setVisible(false);
+    wizard()->setProperty("encryptionState", false);
+#endif
 
     // call to init label
     updateStatus();
@@ -257,9 +267,7 @@ bool OwncloudAdvancedSetupPage::encryptionState() const
 
 QString OwncloudAdvancedSetupPage::password() const
 {
-    QString pass = wizard()->property("password").toString();
-    wizard()->setProperty("password", "");
-    return pass;
+    return wizard()->property("password").toString();
 }
 
 QStringList OwncloudAdvancedSetupPage::selectiveSyncBlacklist() const
@@ -274,7 +282,11 @@ bool OwncloudAdvancedSetupPage::isConfirmBigFolderChecked() const
 
 bool OwncloudAdvancedSetupPage::validatePage()
 {
-    if (!_created || (encryptionState() && !EncryptedFolder::checkKey(localFolder()))) {
+    if (!_created
+#ifdef ADD_ENCRYPTION
+             || (encryptionState() && !EncryptedFolder::checkKey(localFolder()))
+#endif
+            ) {
         setErrorString(QString());
         _checking = true;
         startSpinner();
@@ -332,7 +344,9 @@ void OwncloudAdvancedSetupPage::slotSelectFolder()
         _ui.pbSelectLocalFolder->setText(dir);
         wizard()->setProperty("localFolder", dir);
         updateStatus();
+#ifdef ADD_ENCRYPTION
         updateEncryptionUi(dir);
+#endif
     }
 
     qint64 rSpace = _ui.rSyncEverything->isChecked() ? _rSize : _rSelectedSize;
@@ -388,6 +402,7 @@ void OwncloudAdvancedSetupPage::slotSelectiveSyncClicked()
     }
 }
 
+#ifdef ADD_ENCRYPTION
 void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
 {
     _ui.password1->clear();
@@ -425,6 +440,7 @@ void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
     }
     emit completeChanged();
 }
+#endif
 
 void OwncloudAdvancedSetupPage::slotSyncEverythingClicked()
 {
@@ -494,7 +510,6 @@ void OwncloudAdvancedSetupPage::slotEncryptionStateChanged(bool value)
 
 void OwncloudAdvancedSetupPage::slotPasswordChanged(const QString &password)
 {
-    LOG("Password changed!\n");
     if (password.isEmpty()) {
         _passwordValid = false;
 
@@ -522,13 +537,17 @@ void OwncloudAdvancedSetupPage::slotPasswordChanged(const QString &password)
 
 void OwncloudAdvancedSetupPage::slotRadioButtonClicked()
 {
+#ifdef ADD_ENCRYPTION
     updateEncryptionUi(wizard()->property("localFolder").toString());
+#endif
     emit completeChanged();
 }
 
 void OwncloudAdvancedSetupPage::slotCleanSyncClicked()
 {
+#ifdef ADD_ENCRYPTION
     updateEncryptionUi(QString());
+#endif
     emit completeChanged();
 }
 

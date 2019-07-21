@@ -92,7 +92,11 @@ void EncryptedFolder::generateKey(const QString &folder_path, char* passwd) {
             + QString(".key")
             ).toAscii().data();
     cryptfs_generate_key_file(passwd, path);
-    LOG("Kinda generated key in %s\n", folder.entryList(QDir::NoDotAndDotDot).join(QString(" ")).toAscii().data());
+    LOG(
+            "Kinda generated key in %s with passwd %s\n",
+            folder.entryList(QDir::NoDotAndDotDot).join(QString(" ")).toAscii().data(),
+            passwd
+            );
 }
 
 QString EncryptedFolder::generateMountPath(const QString &folder)

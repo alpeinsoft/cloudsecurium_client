@@ -48,11 +48,9 @@ endif()
 include_directories(
     ${CMAKE_SOURCE_DIR}/src/3rdparty
 )
-
-# <sukhorukov tag=DISABLED_CRYPTFS>
-add_subdirectory(cryptfs)
-# add_subdirectory(cryptfs_loop)
-# </sukhorukov>
+if(ADD_ENCRYPTION)
+    add_subdirectory(cryptfs)
+endif()
 add_subdirectory(csync)
 add_subdirectory(libsync)
 if (NOT BUILD_LIBRARIES_ONLY)

@@ -3,6 +3,11 @@ set(CMAKE_CXX_STANDARD 14)
 
 project(client)
 
+if(UNIX AND NOT APPLE)
+    add_definitions(-DADD_ENCRYPTION)
+    set(ADD_ENCRYPTION "1")
+endif()
+
 set(BIN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")

@@ -38,7 +38,9 @@
 #include "creds/abstractcredentials.h"
 #include "creds/dummycredentials.h"
 
+#ifdef ADD_ENCRYPTION
 #include "encrypted_folder.h"
+#endif
 
 namespace OCC {
 
@@ -442,14 +444,17 @@ bool OwncloudSetupWizard::checkDowngradeAdvised(QNetworkReply *reply)
 
 void OwncloudSetupWizard::slotCreateLocalAndRemoteFolders(const QString &localFolder, const QString &remoteFolder)
 {
+#ifdef ADD_ENCRYPTION
     LOG("in slotCreate...\n");
     if (_ocWizard->encryptionState()) {
+        LOG("got passwd1: %s\n", _ocWizard->password().toAscii().data());
         EncryptedFolder::generateKey(localFolder, _ocWizard->password().toAscii().data());
         QDir uncr(QDir::toNativeSeparators(QDir(localFolder).absolutePath())+QString("_UNCRYPT"));
         if (uncr.exists())
             uncr.removeRecursively();
         uncr.mkpath(".");
     }
+#endif
     qCInfo(lcWizard) << "Setup local sync folder for new oC connection " << localFolder;
     const QDir fi(localFolder);
 
@@ -653,14 +658,16 @@ void OwncloudSetupWizard::slotAssistantFinished(int result)
         // is changed.
         auto account = applyAccountChanges();
         QString localFolder = FolderDefinition::prepareLocalPath(_ocWizard->localFolder());
-        LOG("localFolder is: %s\n", localFolder.toAscii().data());
 
         bool startFromScratch = _ocWizard->field("OCSyncFromScratch").toBool();
 
         if (!startFromScratch || ensureStartFromScratch(localFolder)) {
-            if (_ocWizard->encryptionState() && startFromScratch)
+#if ADD_ENCRYPTION
+            if (_ocWizard->encryptionState() && startFromScratch) {
+                LOG("got passwd2: %s\n", _ocWizard->password().toAscii().data());
                 EncryptedFolder::generateKey(localFolder, _ocWizard->password().toAscii().data());
-
+            }
+#endif
             qCInfo(lcWizard) << "Adding folder definition for" << localFolder << _remoteFolder;
             FolderDefinition folderDefinition;
             folderDefinition.localPath = localFolder;

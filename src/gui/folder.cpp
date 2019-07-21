@@ -42,8 +42,9 @@
 #include <QPushButton>
 #include <QtCore>
 
+#ifdef ADD_ENCRYPTION
 #include "encrypted_folder.h"
-
+#endif
 
 namespace OCC {
 
@@ -62,12 +63,15 @@ Folder::Folder(const FolderDefinition &definition,
     , _journal(_definition.absoluteJournalPath())
     , _fileLog(new SyncRunFileLog)
     , _saveBackwardsCompatible(false)
+#ifdef ADD_ENCRYPTION
     , encryptedFolder(nullptr)
+#endif
 {
+#ifdef ADD_ENCRYPTION
     encryptedFolder = new EncryptedFolder(definition.localPath);
+#endif
     _timeSinceLastSyncStart.start();
     _timeSinceLastSyncDone.start();
-
     SyncResult::Status status = SyncResult::NotYetStarted;
     if (definition.paused) {
         status = SyncResult::Paused;
@@ -120,7 +124,9 @@ Folder::Folder(const FolderDefinition &definition,
 
 Folder::~Folder()
 {
+#ifdef ADD_ENCRYPTION
     delete encryptedFolder;
+#endif
     // Reset then engine first as it will abort and try to access members of the Folder
     _engine.reset();
 }
@@ -128,6 +134,7 @@ Folder::~Folder()
 void Folder::checkLocalPath()
 {
     QFileInfo fi;
+ #ifdef ADD_ENCRYPTION
     if (this->encryptedFolder->isRunning()) {
         _canonicalLocalPath = QString(_definition.localPath);
         _canonicalLocalPath.chop(1);
@@ -137,6 +144,7 @@ void Folder::checkLocalPath()
         LOG("canonicalLocalPath is now %s\n", _canonicalLocalPath.toAscii().data());
     }
     else {
+#endif
         fi = QFileInfo(_definition.localPath);
         _canonicalLocalPath = fi.canonicalFilePath();
     #ifdef Q_OS_MAC
@@ -149,7 +157,9 @@ void Folder::checkLocalPath()
         } else if (!_canonicalLocalPath.endsWith('/')) {
             _canonicalLocalPath.append('/');
         }
+#ifdef ADD_ENCRYPTION
     }
+#endif
     if (fi.isDir() && fi.isReadable()) {
         qCDebug(lcFolder) << "Checked local path ok";
     } else {
@@ -230,7 +240,7 @@ QString Folder::cleanPath() const
 
 bool Folder::encryptionState() const
 {
-    return m_encryptionState;
+    return false;
 }
 
 bool Folder::isBusy() const
@@ -1202,7 +1212,6 @@ QString FolderDefinition::prepareLocalPath(const QString &path)
     if (!p.endsWith(QLatin1Char('/'))) {
         p.append(QLatin1Char('/'));
     }
-    LOG("in prepareLocalPath: %s\n", p.toAscii().data());
     return p;
 }
 

@@ -28,7 +28,10 @@
 #include <QStringList>
 #include <QUuid>
 #include <set>
+
+#ifdef ADD_ENCRYPTION
 #include "encrypted_folder.h"
+#endif
 
 class QThread;
 class QSettings;
@@ -137,8 +140,10 @@ public:
 
     bool encryptionState() const;
 
+#ifdef ADD_ENCRYPTION
     EncryptedFolder* encryptedFolder;
     bool m_encryptionState = false;
+#endif
 
     qint64 *pid = nullptr;
 

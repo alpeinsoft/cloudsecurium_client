@@ -130,8 +130,11 @@ set(client_SRCS
     wizard/webviewpage.cpp
     wizard/webview.cpp
     wizard/slideshow.cpp
-    encrypted_folder.cpp
 )
+
+if(ADD_ENCRYPTION)
+    list(APPEND client_SRCS encrypted_folder.cpp)
+endif()
 
 IF(NOT NO_SHIBBOLETH)
     list(APPEND client_SRCS
@@ -316,16 +319,9 @@ set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
 set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
         INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}/${APPLICATION_EXECUTABLE};${CMAKE_INSTALL_RPATH}" )
 
-# <sukhorukov tag=DISABLED_CRYPTFS>
-# set_target_properties( cryptfs_loop PROPERTIES
-#         RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
-# )
-# # Only relevant for Linux? On OS X it by default properly checks in the bundle directory next to the exe
-# set_target_properties( cryptfs_loop PROPERTIES
-#        INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}/${APPLICATION_EXECUTABLE};${CMAKE_INSTALL_RPATH}" )
-#
+if(ADD_ENCRYPTION)
 target_link_libraries( ${APPLICATION_EXECUTABLE} cryptfs )
-# </sukhorukov>
+endif()
 
 target_link_libraries( ${APPLICATION_EXECUTABLE} Qt5::Widgets Qt5::Network Qt5::Xml)
 target_link_libraries( ${APPLICATION_EXECUTABLE} ${synclib_NAME} )
