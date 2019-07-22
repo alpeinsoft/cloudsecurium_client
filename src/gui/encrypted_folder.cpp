@@ -63,6 +63,9 @@ EncryptedFolder::~EncryptedFolder()
         return;
     LOG("killing dummy...\n");
     LOG("after unmount %d\n", cryptfs_ummount(this->cfs));
+    loop->wait(100);
+    if (loop->isRunning())
+        loop->terminate();
     delete loop;
     cryptfs_free(this->cfs);
     LOG("kill dummy\n");

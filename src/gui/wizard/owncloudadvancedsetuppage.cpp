@@ -407,36 +407,34 @@ void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
 {
     _ui.password1->clear();
     _ui.password2->clear();
-    _ui.encryptionState->setChecked(false);
-
-    wizard()->setProperty("encryptionState", false);
-
-    if (_ui.cbSyncFromScratch->isChecked()) {
-        _ui.encryptionState->setEnabled(true);
-        _ui.passwords->setEnabled(false);
-        emit completeChanged();
-        return;
-    }
+    _ui.encryptionState->setChecked(true);
+    _ui.encryptionState->setEnabled(true);
+    _ui.passwords->setEnabled(true);
+    _passwordValid = false;
+    wizard()->setProperty("encryptionState", true);
 
     LOG("Soon I'll updateEncryptionUi according to: %s\n", folder.toLocal8Bit().data());
     if (EncryptedFolder::checkKey(folder)) {
         LOG("It is already encrypted\n");
-        wizard()->setProperty("encryptionState", true);
         _ui.encryptionState->setEnabled(false);
-        _ui.encryptionState->setChecked(true);
-        _ui.passwords->setEnabled(true);
+        _ui.passwords->setEnabled(false);
+        _passwordValid = true;
+        wizard()->setProperty("encryptionState", false);
     } else if (!QDir(folder).exists()
                || QDir(folder).entryInfoList(
-                   QDir::NoDotAndDotDot
-                   | QDir::AllEntries
-               ).count() == 0) {
+                       QDir::NoDotAndDotDot
+                       | QDir::AllEntries
+                       ).count() == 0
+               || _ui.cbSyncFromScratch->isChecked()
+               ) {
         LOG("It can be encrypted\n");
-        _ui.encryptionState->setEnabled(true);
-        _ui.passwords->setEnabled(false);
     } else {
         LOG("It can't be encrypted\n");
         _ui.encryptionState->setEnabled(false);
+        _ui.encryptionState->setChecked(false);
         _ui.passwords->setEnabled(false);
+        wizard()->setProperty("encryptionState", false);
+        _passwordValid = true;
     }
     emit completeChanged();
 }

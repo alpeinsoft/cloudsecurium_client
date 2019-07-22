@@ -169,5 +169,26 @@ int main(int argc, char **argv)
         }
     }
 
+#ifdef ADD_ENCRYPTION
+    signal(
+            SIGTERM,
+            [](int)->void
+            {
+                LOG("doing unmount\n");
+                FolderMan::instance()->unloadAndDeleteAllFolders();
+                exit(0);
+            }
+            );
+    signal(
+            SIGINT,
+            [](int)->void
+            {
+                LOG("doing unmount\n");
+                FolderMan::instance()->unloadAndDeleteAllFolders();
+                exit(0);
+            }
+            );
+#endif
+
     return app.exec();
 }

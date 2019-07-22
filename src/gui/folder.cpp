@@ -68,7 +68,8 @@ Folder::Folder(const FolderDefinition &definition,
 #endif
 {
 #ifdef ADD_ENCRYPTION
-    encryptedFolder = new EncryptedFolder(definition.localPath);
+    if (EncryptedFolder::checkKey(definition.localPath))
+        encryptedFolder = new EncryptedFolder(definition.localPath);
 #endif
     _timeSinceLastSyncStart.start();
     _timeSinceLastSyncDone.start();
@@ -135,7 +136,7 @@ void Folder::checkLocalPath()
 {
     QFileInfo fi;
  #ifdef ADD_ENCRYPTION
-    if (this->encryptedFolder->isRunning()) {
+    if (this->encryptedFolder != nullptr && this->encryptedFolder->isRunning()) {
         _canonicalLocalPath = QString(_definition.localPath);
         _canonicalLocalPath.chop(1);
         _canonicalLocalPath += QString("_UNCRYPT/");

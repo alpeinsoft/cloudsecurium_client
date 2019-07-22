@@ -55,7 +55,6 @@ FolderMan::FolderMan(QObject *parent)
 {
     ASSERT(!_instance);
     _instance = this;
-
     _socketApi.reset(new SocketApi);
 
     ConfigFile cfg;
