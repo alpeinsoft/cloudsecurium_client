@@ -36,7 +36,7 @@ class EncryptedFolder
         }
     } *loop = nullptr;
 public:
-    EncryptedFolder(QString mount_path);
+    EncryptedFolder(QString mount_path, char *password);
     ~EncryptedFolder();
     bool isRunning();
 

@@ -528,6 +528,16 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="encryptionNotice">
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ef2929;&quot;&gt;Do not touch encrypted folder, your data might be lost!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="syncModeLabel">
      <property name="text">
       <string notr="true">Status message</string>

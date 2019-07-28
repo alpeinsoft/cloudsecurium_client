@@ -407,6 +407,7 @@ void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
 {
     _ui.password1->clear();
     _ui.password2->clear();
+    _ui.encryptionNotice->setVisible(true);
     _ui.encryptionState->setChecked(true);
     _ui.encryptionState->setEnabled(true);
     _ui.passwords->setEnabled(true);
@@ -430,6 +431,7 @@ void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
         LOG("It can be encrypted\n");
     } else {
         LOG("It can't be encrypted\n");
+        _ui.encryptionNotice->setVisible(false);
         _ui.encryptionState->setEnabled(false);
         _ui.encryptionState->setChecked(false);
         _ui.passwords->setEnabled(false);
@@ -503,6 +505,7 @@ void OwncloudAdvancedSetupPage::slotEncryptionStateChanged(bool value)
     }
 
     wizard()->setProperty("encryptionState", value);
+    _ui.encryptionNotice->setVisible(value);
     emit completeChanged();
 }
 

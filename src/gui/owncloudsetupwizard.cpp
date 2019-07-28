@@ -447,8 +447,8 @@ void OwncloudSetupWizard::slotCreateLocalAndRemoteFolders(const QString &localFo
 #ifdef ADD_ENCRYPTION
     LOG("in slotCreate...\n");
     if (_ocWizard->encryptionState()) {
-        LOG("got passwd1: %s\n", _ocWizard->password().toAscii().data());
-        EncryptedFolder::generateKey(localFolder, _ocWizard->password().toAscii().data());
+        LOG("got passwd1: %s\n", _ocWizard->password().toUtf8().data());
+        EncryptedFolder::generateKey(localFolder, _ocWizard->password().toUtf8().data());
         QDir uncr(QDir::toNativeSeparators(QDir(localFolder).absolutePath())+QString("_UNCRYPT"));
         if (uncr.exists())
             uncr.removeRecursively();
@@ -664,8 +664,8 @@ void OwncloudSetupWizard::slotAssistantFinished(int result)
         if (!startFromScratch || ensureStartFromScratch(localFolder)) {
 #if ADD_ENCRYPTION
             if (_ocWizard->encryptionState() && startFromScratch) {
-                LOG("got passwd2: %s\n", _ocWizard->password().toAscii().data());
-                EncryptedFolder::generateKey(localFolder, _ocWizard->password().toAscii().data());
+                LOG("got passwd2: %s\n", _ocWizard->password().toUtf8().data());
+                EncryptedFolder::generateKey(localFolder, _ocWizard->password().toUtf8().data());
             }
 #endif
             qCInfo(lcWizard) << "Adding folder definition for" << localFolder << _remoteFolder;

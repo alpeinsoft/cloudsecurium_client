@@ -141,6 +141,7 @@ public:
     bool encryptionState() const;
 
 #ifdef ADD_ENCRYPTION
+    bool addEncryption();
     EncryptedFolder* encryptedFolder;
     bool m_encryptionState = false;
 #endif

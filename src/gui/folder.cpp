@@ -41,6 +41,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QtCore>
+#include <QInputDialog>
 
 #ifdef ADD_ENCRYPTION
 #include "encrypted_folder.h"
@@ -68,8 +69,7 @@ Folder::Folder(const FolderDefinition &definition,
 #endif
 {
 #ifdef ADD_ENCRYPTION
-    if (EncryptedFolder::checkKey(definition.localPath))
-        encryptedFolder = new EncryptedFolder(definition.localPath);
+    addEncryption();
 #endif
     _timeSinceLastSyncStart.start();
     _timeSinceLastSyncDone.start();
@@ -78,6 +78,7 @@ Folder::Folder(const FolderDefinition &definition,
         status = SyncResult::Paused;
     }
     _syncResult.setStatus(status);
+
 
     // check if the local path exists
     checkLocalPath();
@@ -123,6 +124,50 @@ Folder::Folder(const FolderDefinition &definition,
         this, &Folder::slotFolderConflicts);
 }
 
+#ifdef ADD_ENCRYPTION
+bool Folder::addEncryption()
+{
+    if (EncryptedFolder::checkKey(_definition.localPath)) {
+        bool ok = false;
+        QString password;
+        do {
+            password = QInputDialog::getText(
+                        nullptr,
+                        QString("Password"),
+                        QString("Password for "+_definition.localPath),
+                        QLineEdit::Password,
+                        nullptr,
+                        &ok
+                        );
+            LOG("got: %s\n", password.toUtf8().data());
+            if (ok) {
+                this->encryptedFolder = new EncryptedFolder(
+                        _definition.localPath,
+                        password.toUtf8().data()
+                        );
+                if (!this->encryptedFolder->isRunning()) {
+                    delete encryptedFolder;
+                    QMessageBox::critical(
+                            nullptr,
+                            QString("Password"),
+                            QString("Invalid password")
+                            );
+                    continue;
+                }
+                if (!_canonicalLocalPath.endsWith("_UNCRYPT/"))
+                    checkLocalPath();
+                return true;
+            } else {
+                LOG("fuck you!\n");
+                setSyncPaused(true);
+                return false;
+            }
+        } while(0);
+    }
+    return false;
+}
+#endif
+
 Folder::~Folder()
 {
 #ifdef ADD_ENCRYPTION
@@ -142,7 +187,7 @@ void Folder::checkLocalPath()
         _canonicalLocalPath += QString("_UNCRYPT/");
         fi = QFileInfo(_canonicalLocalPath);
         _canonicalLocalPath = fi.canonicalFilePath();
-        LOG("canonicalLocalPath is now %s\n", _canonicalLocalPath.toAscii().data());
+        LOG("canonicalLocalPath is now %s\n", _canonicalLocalPath.toUtf8().data());
     }
     else {
 #endif
@@ -274,6 +319,19 @@ void Folder::setSyncPaused(bool paused)
     if (paused == _definition.paused) {
         return;
     }
+
+#ifdef ADD_ENCRYPTION
+    if (
+        !paused
+        && this->encryptedFolder == nullptr
+        && EncryptedFolder::checkKey(_definition.localPath)
+            ) {
+        LOG("tried to resume encrypted folder\n");
+        if (!this->addEncryption()) {
+            return;
+        }
+    }
+#endif
 
     _definition.paused = paused;
     saveToSettings();

@@ -6,47 +6,38 @@ extern "C" {
     #include "cryptfs.h"
 }
 
-EncryptedFolder::EncryptedFolder(QString local_path)
+EncryptedFolder::EncryptedFolder(QString local_path, char *password)
 {
-    LOG("start dummy: with mnt_path %s\n", local_path.toAscii().data());
+    LOG("start dummy: with mnt_path %s\n", local_path.toUtf8().data());
     if (!checkKey(local_path))
         return;
     this->encryption_path = QString(local_path);
-    LOG("Cryptfs: encryption_path = %s\n", this->encryption_path.toAscii().data());
+    LOG("Cryptfs: encryption_path = %s\n", this->encryption_path.toUtf8().data());
 
     this->key_path = QString(this->encryption_path + QString(".key"));
-    LOG("Cryptfs: key_path = %s\n", this->key_path.toAscii().data());
+    LOG("Cryptfs: key_path = %s\n", this->key_path.toUtf8().data());
 
     this->mount_path = EncryptedFolder::generateMountPath(local_path);
-    LOG("Cryptfs: mount_path = %s\n", this->mount_path.toAscii().data());
+    LOG("Cryptfs: mount_path = %s\n", this->mount_path.toUtf8().data());
 
     this->cfs = cryptfs_create(
-                this->encryption_path.toAscii().data(),
-                this->key_path.toAscii().data()
+                this->encryption_path.toUtf8().data(),
+                this->key_path.toUtf8().data()
                 );
     if (this->cfs == nullptr)
         return;
     LOG("Cryptfs: created structure successfully at addr %lu\n", this->cfs);
 
-    do {
-        QString password = QInputDialog::getText(
-                    nullptr,
-                    QString("Password"),
-                    QString("Password for "+local_path),
-                    QLineEdit::Password
-                    );
-        LOG("got: %s\n", password.toAscii().data());
-
-        mount_rc = cryptfs_mount(
-                    cfs,
-                    mount_path.toAscii().data(),
-                    password.toAscii().data()
-                    );
-        if (mount_rc)
-            perror("cryptfs_mount");
-        LOG("got: %d\n", mount_rc);
-    } while (mount_rc);
-    LOG("Cryptfs: mount successful at %s\n", mount_path.toAscii().data());
+    mount_rc = cryptfs_mount(
+                cfs,
+                mount_path.toUtf8().data(),
+                password
+                );
+    if (mount_rc) {
+        perror("cryptfs_mount");
+        return;
+    }
+    LOG("got: %d\n", mount_rc);
 
     loop = new CryptfsLoop(this->cfs);
     loop->start();
@@ -79,7 +70,7 @@ bool EncryptedFolder::isRunning()
 }
 
 bool EncryptedFolder::checkKey(const QString &folder) {
-    LOG("Checking for key in %s\n", folder.toAscii().data());
+    LOG("Checking for key in %s\n", folder.toUtf8().data());
     return QDir(folder).exists(QString(".key"));
 }
 
@@ -93,11 +84,11 @@ void EncryptedFolder::generateKey(const QString &folder_path, char* passwd) {
             QDir::toNativeSeparators(folder.absolutePath())
             + QDir::separator()
             + QString(".key")
-            ).toAscii().data();
+            ).toUtf8().data();
     cryptfs_generate_key_file(passwd, path);
     LOG(
             "Kinda generated key in %s with passwd %s\n",
-            folder.entryList(QDir::NoDotAndDotDot).join(QString(" ")).toAscii().data(),
+            folder.entryList(QDir::NoDotAndDotDot).join(QString(" ")).toUtf8().data(),
             passwd
             );
 }
@@ -107,6 +98,6 @@ QString EncryptedFolder::generateMountPath(const QString &folder)
     QString tmp = QString(folder);
     tmp.chop(1);
     tmp.append(QString("_UNCRYPT")+QDir::separator());
-    LOG("Created %s\n", tmp.toAscii().data());
+    LOG("Created %s\n", tmp.toUtf8().data());
     return tmp;
 }

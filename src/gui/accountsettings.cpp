@@ -859,6 +859,7 @@ void AccountSettings::showConnectionLabel(const QString &message, QStringList er
 
 void AccountSettings::slotEnableCurrentFolder()
 {
+    LOG("In slotEnableCurrentFolder!");
     auto alias = selectedFolderAlias();
 
     if (!alias.isEmpty()) {
@@ -904,7 +905,7 @@ void AccountSettings::slotEnableCurrentFolder()
         f->setSyncPaused(!currentlyPaused);
 
         // keep state for the icon setting.
-        if (currentlyPaused)
+        if (f->syncPaused())
             _wasDisabledBefore = true;
 
         _model->slotUpdateFolderState(f);
