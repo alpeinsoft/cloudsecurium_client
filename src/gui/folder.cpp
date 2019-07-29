@@ -127,44 +127,44 @@ Folder::Folder(const FolderDefinition &definition,
 #ifdef ADD_ENCRYPTION
 bool Folder::addEncryption()
 {
-    if (EncryptedFolder::checkKey(_definition.localPath)) {
-        bool ok = false;
-        QString password;
-        do {
-            password = QInputDialog::getText(
+    if (!EncryptedFolder::checkKey(_definition.localPath))
+        return false;
+    bool ok = false;
+    QString password;
+    do {
+        password = QInputDialog::getText(
+                    nullptr,
+                    QString("Password"),
+                    QString("Password for "+_definition.localPath),
+                    QLineEdit::Password,
+                    nullptr,
+                    &ok
+                    );
+        LOG("got: %s\n", password.toUtf8().data());
+        if (ok) {
+            this->encryptedFolder = new EncryptedFolder(
+                    _definition.localPath,
+                    password.toUtf8().data()
+                    );
+            if (!this->encryptedFolder->isRunning()) {
+                delete encryptedFolder;
+                encryptedFolder = nullptr;
+                QMessageBox::critical(
                         nullptr,
                         QString("Password"),
-                        QString("Password for "+_definition.localPath),
-                        QLineEdit::Password,
-                        nullptr,
-                        &ok
+                        QString("Invalid password")
                         );
-            LOG("got: %s\n", password.toUtf8().data());
-            if (ok) {
-                this->encryptedFolder = new EncryptedFolder(
-                        _definition.localPath,
-                        password.toUtf8().data()
-                        );
-                if (!this->encryptedFolder->isRunning()) {
-                    delete encryptedFolder;
-                    QMessageBox::critical(
-                            nullptr,
-                            QString("Password"),
-                            QString("Invalid password")
-                            );
-                    continue;
-                }
-                if (!_canonicalLocalPath.endsWith("_UNCRYPT/"))
-                    checkLocalPath();
-                return true;
-            } else {
-                LOG("fuck you!\n");
-                setSyncPaused(true);
-                return false;
+                continue;
             }
-        } while(0);
-    }
-    return false;
+            if (!_canonicalLocalPath.endsWith("_UNCRYPT/"))
+                checkLocalPath();
+            return true;
+        } else {
+            LOG("fuck you!\n");
+            setSyncPaused(true);
+            return false;
+        }
+    } while(1);
 }
 #endif
 
