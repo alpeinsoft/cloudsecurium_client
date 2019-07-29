@@ -277,4 +277,15 @@ inline bool Utility::isBSD()
 }
 
 }
+
+extern "C" {
+    #define CRYPTFS_DEBUG
+
+    #ifdef CRYPTFS_DEBUG
+        #define LOG(format, ...) fprintf(stderr, format, ##__VA_ARGS__)
+    #else
+        #define LOG(format, ...)
+    #endif
+}
+
 #endif // UTILITY_H

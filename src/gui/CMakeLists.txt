@@ -323,7 +323,7 @@ if(ADD_ENCRYPTION)
 target_link_libraries( ${APPLICATION_EXECUTABLE} cryptfs )
 endif()
 
-target_link_libraries( ${APPLICATION_EXECUTABLE} Qt5::Widgets Qt5::Network Qt5::Xml)
+target_link_libraries( ${APPLICATION_EXECUTABLE} Qt5::Widgets Qt5::Network Qt5::Xml Qt5::WebEngineWidgets)
 target_link_libraries( ${APPLICATION_EXECUTABLE} ${synclib_NAME} )
 IF(BUILD_UPDATER)
     target_link_libraries( ${APPLICATION_EXECUTABLE} updater )
