@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 project(client)
 
-if(UNIX AND NOT APPLE)
+if(UNIX) # AND NOT APPLE)
     add_definitions(-DADD_ENCRYPTION)
     set(ADD_ENCRYPTION "1")
 endif()

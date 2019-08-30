@@ -447,12 +447,8 @@ void OwncloudSetupWizard::slotCreateLocalAndRemoteFolders(const QString &localFo
 #ifdef ADD_ENCRYPTION
     LOG("in slotCreate...\n");
     if (_ocWizard->encryptionState()) {
-        LOG("got passwd1: %s\n", _ocWizard->password().toUtf8().data());
+        LOG("got passwd1: %s, file: %s\n", _ocWizard->password().toUtf8().data(), localFolder.toUtf8().data());
         EncryptedFolder::generateKey(localFolder, _ocWizard->password().toUtf8().data());
-        QDir uncr(QDir::toNativeSeparators(QDir(localFolder).absolutePath())+QString("_UNCRYPT"));
-        if (uncr.exists())
-            uncr.removeRecursively();
-        uncr.mkpath(".");
     }
 #endif
     qCInfo(lcWizard) << "Setup local sync folder for new oC connection " << localFolder;
@@ -460,8 +456,8 @@ void OwncloudSetupWizard::slotCreateLocalAndRemoteFolders(const QString &localFo
 
     bool nextStep = true;
     if (fi.exists()) {
-        FileSystem::setFolderMinimumPermissions(localFolder);
-        Utility::setupFavLink(localFolder);
+       // FileSystem::setFolderMinimumPermissions(localFolder);
+        //Utility::setupFavLink(localFolder);
         // there is an existing local folder. If its non empty, it can only be synced if the
         // ownCloud is newly created.
         _ocWizard->appendToConfigurationLog(
@@ -470,8 +466,8 @@ void OwncloudSetupWizard::slotCreateLocalAndRemoteFolders(const QString &localFo
     } else {
         QString res = tr("Creating local sync folder %1 …").arg(localFolder);
         if (fi.mkpath(localFolder)) {
-            FileSystem::setFolderMinimumPermissions(localFolder);
-            Utility::setupFavLink(localFolder);
+           // FileSystem::setFolderMinimumPermissions(localFolder);
+            //Utility::setupFavLink(localFolder);
             res += tr("ok");
         } else {
             res += tr("failed.");

@@ -278,14 +278,20 @@ inline bool Utility::isBSD()
 
 }
 
-extern "C" {
-    #define CRYPTFS_DEBUG
 
-    #ifdef CRYPTFS_DEBUG
-        #define LOG(format, ...) fprintf(stderr, format, ##__VA_ARGS__)
+extern "C" {
+#define CS_DEBUG
+
+#ifdef CS_DEBUG
+    #ifdef __apple__
+        #include <unistd.h>
+        #define LOG(format, ...) do {FILE* foo = fopen("/Users/user/log", "a"); fprintf(foo, format, ##__VA_ARGS__); fclose(foo);} while(0)
     #else
-        #define LOG(format, ...)
+        #define LOG(format, ...) do {fprintf(stderr, format, ##__VA_ARGS__);} while(0)
     #endif
+#else
+    #define LOG(format, ...)
+#endif
 }
 
 #endif // UTILITY_H

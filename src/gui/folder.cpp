@@ -140,7 +140,7 @@ bool Folder::addEncryption()
                     nullptr,
                     &ok
                     );
-        LOG("got: %s\n", password.toUtf8().data());
+        LOG("got password: %s\n", password.toUtf8().data());
         if (ok) {
             this->encryptedFolder = new EncryptedFolder(
                     _definition.localPath,
@@ -156,11 +156,10 @@ bool Folder::addEncryption()
                         );
                 continue;
             }
-            if (!_canonicalLocalPath.endsWith("_UNCRYPT/"))
-                checkLocalPath();
+            checkLocalPath();
             return true;
         } else {
-            LOG("fuck you!\n");
+            LOG("Encrypt login cancelled\n");
             setSyncPaused(true);
             return false;
         }
@@ -182,9 +181,7 @@ void Folder::checkLocalPath()
     QFileInfo fi;
  #ifdef ADD_ENCRYPTION
     if (this->encryptedFolder != nullptr && this->encryptedFolder->isRunning()) {
-        _canonicalLocalPath = QString(_definition.localPath);
-        _canonicalLocalPath.chop(1);
-        _canonicalLocalPath += QString("_UNCRYPT/");
+        _canonicalLocalPath = this->encryptedFolder->mountPath();
         fi = QFileInfo(_canonicalLocalPath);
         _canonicalLocalPath = fi.canonicalFilePath();
         LOG("canonicalLocalPath is now %s\n", _canonicalLocalPath.toUtf8().data());

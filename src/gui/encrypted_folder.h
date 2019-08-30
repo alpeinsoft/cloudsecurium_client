@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QtCore>
+#include "common/utility.h"
 extern "C" {
     #include "cryptfs.h"
 }
@@ -17,6 +18,9 @@ extern "C" {
 
 class EncryptedFolder
 {
+#ifdef __apple__
+    static int mount_number;
+#endif
     QString mount_path, encryption_path, key_path;
     struct cryptfs* cfs = nullptr;
     int mount_rc = -1;
@@ -32,7 +36,9 @@ class EncryptedFolder
         void run()
         {
             setTerminationEnabled(true);
+            LOG("settermination true\n");
             cryptfs_loop(cfs);
+            LOG("cryptfs_loop finished\n");
         }
     } *loop = nullptr;
 public:
@@ -42,7 +48,8 @@ public:
 
     static bool checkKey(const QString &folder);
     static void generateKey(const QString &folder, char *password);
-    static QString generateMountPath(const QString &folder);
+    QString generateMountPath(const QString &folder);
+    QString mountPath();
 };
 
 #endif

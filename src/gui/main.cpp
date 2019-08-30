@@ -45,9 +45,13 @@ void warnSystray()
                                     "Otherwise, please install a system tray application such as 'trayer' and try again.")
             .arg(Theme::instance()->appNameGUI()));
 }
-
+extern "C" {
+#include <unistd.h>
+FILE *log_fd;
+}
 int main(int argc, char **argv)
 {
+    log_fd = fopen("/home/lyavon/storage/log", "a");
     Q_INIT_RESOURCE(client);
 
     // OpenSSL 1.1.0: No explicit initialisation or de-initialisation is necessary.
