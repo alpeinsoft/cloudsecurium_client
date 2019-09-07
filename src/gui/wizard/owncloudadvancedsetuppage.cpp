@@ -124,6 +124,7 @@ void OwncloudAdvancedSetupPage::initializePage()
 #ifdef ADD_ENCRYPTION
     updateEncryptionUi(goodLocalFolder);
 #else
+    _ui.encryptionNotice->setVisible(false);
     _ui.errorLabel->setVisible(false);
     _ui.passwords_label->setVisible(false);
     _ui.passwords->setVisible(false);
