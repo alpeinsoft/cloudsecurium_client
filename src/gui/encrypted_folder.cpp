@@ -49,9 +49,6 @@ EncryptedFolder::EncryptedFolder(QString local_path, char *password)
         LOG("Cryptfs: failed to run loop\n");
     else {
         LOG("Cryptfs: loop runs successfully!\n");
-#ifdef __apple__
-        this->mount_number++;
-#endif
     }
 }
 
@@ -60,10 +57,15 @@ EncryptedFolder::~EncryptedFolder()
     if (!isRunning())
         return;
     LOG("killing dummy...\n");
-    int rc = cryptfs_ummount(this->cfs);
-    QThread::sleep(3);
-    LOG("after unmount %d\n", rc);
-    loop->wait(100);
+    int rc;
+#ifdef __APPLE__
+    rc = QProcess::startDetached(QString("umount -f ") + this->mountPath());
+    LOG("after umount -f %s %d\n", this->mountPath().toUtf8().data(), rc);
+#else
+    cryptfs_ummount(this->cfs);
+    LOG("after cryptfs_ummount\n");
+#endif
+    loop->wait(3000);
     LOG("Waited for loop to stop\n");
     if (loop->isRunning()) {
         LOG("terminating loop\n");
@@ -126,9 +128,6 @@ QString EncryptedFolder::generateMountPath(const QString &folder)
     if (path.endsWith("/"))
         path.chop(1);
     path += QString("_UNCRYPT");
-#ifdef __apple__
-    path += QString::number(this->mount_number);
-#endif
     QDir uncr(QDir::toNativeSeparators(path));
     if (uncr.exists())
         uncr.removeRecursively();
