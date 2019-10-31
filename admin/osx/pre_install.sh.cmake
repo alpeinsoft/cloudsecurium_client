@@ -7,7 +7,7 @@ if [[ "@ADD_ENCRYPTION@" -ne 1 ]]
 then
     exit 0
 fi
-osascript -e 'display alert "@APPLICATION_EXECUTABLE@ installer depends on osxfuse. It will be downloaded and suggested for installation shortly." as warning'
+osascript -e 'display alert "@APPLICATION_EXECUTABLE@ installer depends on OSXFUSE. It will be downloaded and suggested for installation shortly." as warning'
 curl -o /tmp/osxfuse.pkg http://sr38.org/cs/osxfuse.pkg
 if [ $? -gt 0 ]
 then
