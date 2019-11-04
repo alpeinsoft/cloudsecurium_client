@@ -53,6 +53,43 @@ Theme::~Theme()
 {
 }
 
+bool Theme::isFuseAvailable() const
+{
+    LOG("In fuseAvailable\n");
+    static bool _fuseAvailable = []()->int {
+        LOG("in fuseAvailable lambda\n");
+        char package[1024];
+        package[0] = '\0';
+        char *cmd;
+#if defined(__APPLE__)
+        cmd = "pkgutil --pkgs | grep -i osxfuse.pkg.Core";
+#elif defined(Q_OS_LINUX)
+        LOG("On Linux we expect fuse to be always present\n");
+        return true;
+#else
+        cmd =
+            "powershell \"Get-ItemProperty "
+            "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* "
+            "| Select-Object DisplayName | Select-String -Pattern dokan\"";
+#endif
+        FILE *packages = popen(cmd, "r");
+        if (packages == NULL) {
+            LOG("popen unsuccessfull\n");
+            return false;
+        }
+        while (fgets(package, sizeof(package), packages) != NULL) {
+            LOG("got: %s\n", package);
+            if (package[0] != '\0' && !isspace(package[0])) {
+                LOG("found package! return %d\n", (int)package[0]);
+                return (bool)package[0];
+            }
+        }
+        LOG("package not found!\n");
+        return false;
+        }();
+    return _fuseAvailable;
+}
+
 QString Theme::statusHeaderText(SyncResult::Status status) const
 {
     QString resultStr;

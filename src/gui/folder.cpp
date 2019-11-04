@@ -45,6 +45,8 @@
 
 #ifdef ADD_ENCRYPTION
 #include "encrypted_folder.h"
+#include "fusedialog.h"
+#include "qapplication.h"
 #endif
 
 namespace OCC {
@@ -129,6 +131,11 @@ bool Folder::addEncryption()
 {
     if (!EncryptedFolder::checkKey(_definition.localPath))
         return false;
+    if (!Theme::instance()->isFuseAvailable()) {
+        setSyncPaused(true);
+        return false;
+    }
+
     bool ok = false;
     QString password;
     do {
@@ -323,6 +330,9 @@ void Folder::setSyncPaused(bool paused)
         && this->encryptedFolder == nullptr
         && EncryptedFolder::checkKey(_definition.localPath)
             ) {
+        LOG("before propose_fuse_install\n");
+        if (!Theme::instance()->isFuseAvailable())
+            fuseInstallDialog();
         LOG("tried to resume encrypted folder\n");
         if (!this->addEncryption()) {
             return;

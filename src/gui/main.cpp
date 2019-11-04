@@ -33,6 +33,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QDebug>
+#include "fusedialog.h"
 
 using namespace OCC;
 
@@ -188,6 +189,18 @@ int main(int argc, char **argv)
                 exit(0);
             }
             );
+    signal(
+            SIGABRT,
+            [](int)->void
+            {
+                LOG("doing unmount\n");
+                FolderMan::instance()->unloadAndDeleteAllFolders();
+                exit(0);
+            }
+            );
+
+    if (!Theme::instance()->isFuseAvailable() && fuseInstallDialog(true))
+        QTimer::singleShot(0, nullptr, [] {fuseInstallResultDialog(fuseInstall());});
 #endif
 
     return app.exec();

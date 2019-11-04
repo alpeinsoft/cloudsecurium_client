@@ -38,6 +38,8 @@
 #include <QNetworkProxy>
 #include <QDir>
 #include <QScopedValueRollback>
+#include "fusedialog.h"
+#include <QMessageBox>
 
 #define QTLEGACY (QT_VERSION < QT_VERSION_CHECK(5,9,0))
 
@@ -54,6 +56,16 @@ GeneralSettings::GeneralSettings(QWidget *parent)
 {
     _ui->setupUi(this);
 
+    if (Theme::instance()->isFuseAvailable())
+        _ui->fuseInstallProposal->hide();
+
+    connect(
+            _ui->fuseInstallButton,
+            &QPushButton::clicked,
+            Theme::instance(), [] {
+                    fuseInstallResultDialog(fuseInstall());
+                }
+            );
     connect(_ui->serverNotificationsCheckBox, &QAbstractButton::toggled,
         this, &GeneralSettings::slotToggleOptionalServerNotifications);
     _ui->serverNotificationsCheckBox->setToolTip(tr("Server notifications that require attention."));

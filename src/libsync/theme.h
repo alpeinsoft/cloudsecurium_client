@@ -225,6 +225,7 @@ public:
      */
     bool monoIconsAvailable() const;
 
+    bool isFuseAvailable() const;
     /**
      * @brief Where to check for new Updates.
      */

@@ -61,6 +61,7 @@ set(client_SRCS
     folderstatusview.cpp
     folderwatcher.cpp
     folderwizard.cpp
+    fusedialog.cpp
     generalsettings.cpp
     legalnotice.cpp
     ignorelisteditor.cpp
