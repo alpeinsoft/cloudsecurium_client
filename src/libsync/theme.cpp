@@ -67,12 +67,19 @@ bool Theme::isFuseAvailable() const
         LOG("On Linux we expect fuse to be always present\n");
         return true;
 #else
+        // TODO: fix checking for dokan on windows
+        LOG("On Windows we temporary tell that dokan is always present\n");
+        return true;
         cmd =
             "powershell \"Get-ItemProperty "
             "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* "
             "| Select-Object DisplayName | Select-String -Pattern dokan\"";
 #endif
+#ifndef _WIN32
         FILE *packages = popen(cmd, "r");
+#else
+        FILE *packages = _popen(cmd, "r");
+        #endif
         if (packages == NULL) {
             LOG("popen unsuccessfull\n");
             return false;

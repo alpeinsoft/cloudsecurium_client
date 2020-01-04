@@ -3,9 +3,11 @@ set(CMAKE_CXX_STANDARD 14)
 
 project(client)
 
-if(UNIX)
-    add_definitions(-DADD_ENCRYPTION)
-    set(ADD_ENCRYPTION "1")
+add_definitions(-DADD_ENCRYPTION)
+set(ADD_ENCRYPTION "1")
+if (WIN32)
+    include_directories(AFTER "${CRYPTFS_LIBRARY}")
+    link_directories("${CRYPTFS_LIBRARY}")
 endif()
 
 set(BIN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")

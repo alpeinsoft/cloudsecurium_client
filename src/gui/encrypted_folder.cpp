@@ -24,8 +24,10 @@ EncryptedFolder::EncryptedFolder(QString local_path, char *password)
                 this->encryption_path.toUtf8().data(),
                 this->key_path.toUtf8().data()
                 );
-    if (this->cfs == nullptr)
+    if (this->cfs == nullptr) {
+        LOG("Can't create cryptfs structure\n");
         return;
+    }
     LOG("Cryptfs: created structure successfully at addr %lu\n", this->cfs);
 
     mount_rc = cryptfs_mount(
@@ -65,7 +67,7 @@ EncryptedFolder::~EncryptedFolder()
     cryptfs_ummount(this->cfs);
     LOG("after cryptfs_ummount\n");
 #endif
-    loop->wait(3000);
+    loop->wait();
     LOG("Waited for loop to stop\n");
     if (loop->isRunning()) {
         LOG("terminating loop\n");

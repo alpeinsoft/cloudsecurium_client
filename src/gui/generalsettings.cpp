@@ -56,6 +56,7 @@ GeneralSettings::GeneralSettings(QWidget *parent)
 {
     _ui->setupUi(this);
 
+#ifdef ADD_ENCRYPTION
     if (Theme::instance()->isFuseAvailable())
         _ui->fuseInstallProposal->hide();
 
@@ -66,6 +67,9 @@ GeneralSettings::GeneralSettings(QWidget *parent)
                     fuseInstallResultDialog(fuseInstall());
                 }
             );
+#else
+    _ui->fuseInstallProposal->hide();
+#endif
     connect(_ui->serverNotificationsCheckBox, &QAbstractButton::toggled,
         this, &GeneralSettings::slotToggleOptionalServerNotifications);
     _ui->serverNotificationsCheckBox->setToolTip(tr("Server notifications that require attention."));
