@@ -6,11 +6,12 @@
 #include <common/utility.h>
 #include <QApplication>
 #include <QProcess>
+#include <QDir>
 
 static const QString osxfuse_url = QString("https://updates.securium.ch/csdc/osxfuse.pkg");
-static const QString dokan_url = QString("");
+static const QString dokan_url = QString("https://updates.securium.ch/csdc/dokan.exe");
 static const QString osx_download_path = QString("/tmp/osxfuse.pkg");
-static const QString win_download_path = QString("");
+static const QString win_download_path = QDir::tempPath() + QString("/dokan.exe");
 
 bool fuseInstallDialog(bool proposeOnly)
 {
@@ -36,7 +37,6 @@ bool fuseDownload()
 #if defined(Q_OS_MAC)
     QString cmd = QString("curl -o %1 %2").arg(osx_download_path, osxfuse_url);
 #else
-    // fix it for windows
     QString cmd = QString("curl -o %1 %2").arg(win_download_path, dokan_url);
 #endif
     return system(cmd.toUtf8().data());

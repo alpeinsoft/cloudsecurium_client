@@ -61,38 +61,34 @@ bool Theme::isFuseAvailable() const
         char package[1024];
         package[0] = '\0';
         char *cmd;
+        char *pattern;
 #if defined(__APPLE__)
-        cmd = "pkgutil --pkgs | grep -i osxfuse.pkg.Core";
+        cmd = "bash -c \"pkgutil --pkgs | grep -i osxfuse.pkg.Core\"";
+        pattern = "osxfuse.pkg.Core";
 #elif defined(Q_OS_LINUX)
         LOG("On Linux we expect fuse to be always present\n");
         return true;
 #else
-        // TODO: fix checking for dokan on windows
-        LOG("On Windows we temporary tell that dokan is always present\n");
-        return true;
+        LOG("On windows\n");
         cmd =
             "powershell \"Get-ItemProperty "
-            "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* "
+            "HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\* "
             "| Select-Object DisplayName | Select-String -Pattern dokan\"";
+        pattern = "Dokan Library";
 #endif
-#ifndef _WIN32
-        FILE *packages = popen(cmd, "r");
-#else
-        FILE *packages = _popen(cmd, "r");
-        #endif
-        if (packages == NULL) {
-            LOG("popen unsuccessfull\n");
+        QProcess update_checker;
+        update_checker.start(cmd, QIODevice::ReadOnly);
+        if (!update_checker.waitForStarted()) {
+            LOG("Error starting update_checker\n");
             return false;
         }
-        while (fgets(package, sizeof(package), packages) != NULL) {
-            LOG("got: %s\n", package);
-            if (package[0] != '\0' && !isspace(package[0])) {
-                LOG("found package! return %d\n", (int)package[0]);
-                return (bool)package[0];
-            }
-        }
-        LOG("package not found!\n");
-        return false;
+        LOG("update_checker runs successfully\n");
+        update_checker.waitForReadyRead();
+        QByteArray result = update_checker.readAllStandardOutput();
+        LOG("update_checker result: %s %d\n",
+                QString(result).toUtf8().data(),
+                result.indexOf(pattern));
+        return result.indexOf(pattern) >= 0;
         }();
     return _fuseAvailable;
 }
