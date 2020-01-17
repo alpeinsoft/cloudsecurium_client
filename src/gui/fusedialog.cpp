@@ -8,10 +8,17 @@
 #include <QProcess>
 #include <QDir>
 
-static const QString osxfuse_url = QString("https://updates.securium.ch/csdc/osxfuse.pkg");
-static const QString dokan_url = QString("https://updates.securium.ch/csdc/dokan.exe");
-static const QString osx_download_path = QString("/tmp/osxfuse.pkg");
-static const QString win_download_path = QDir::tempPath() + QString("/dokan.exe");
+static const QString osxfuseUrl = QString("https://updates.securium.ch/csdc/osxfuse.pkg");
+static const QString osxDownloadPath = QString("/tmp/osxfuse.pkg");
+
+#ifdef _WIN32
+#include <QSettings>
+static QSettings m("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\"
+        "Windows\\CurrentVersion\\App Paths\\cloudsecurium.exe",
+        QSettings::NativeFormat);
+static const QString winDownloadPath =
+        m.value("Default").toString().replace("cloudsecurium", "dokan");
+#endif
 
 bool fuseInstallDialog(bool proposeOnly)
 {
@@ -34,12 +41,13 @@ bool fuseInstallDialog(bool proposeOnly)
 
 bool fuseDownload()
 {
-#if defined(Q_OS_MAC)
-    QString cmd = QString("curl -o %1 %2").arg(osx_download_path, osxfuse_url);
-#else
-    QString cmd = QString("curl -o %1 %2").arg(win_download_path, dokan_url);
-#endif
+#ifndef _WIN32
+    QString cmd = QString("curl -o %1 %2").arg(osxDownloadPath, osxfuseUrl);
     return system(cmd.toUtf8().data());
+#else
+    LOG("Got: %s\n", winDownloadPath.toUtf8().data());
+    return !QFile::exists(winDownloadPath);
+#endif
 }
 
 install_status fuseInstall()
@@ -48,11 +56,11 @@ install_status fuseInstall()
         LOG("downloadFuse returned nonzero");
         return download_error;
     }
-#if defined(Q_OS_MAC)
+#ifndef _WIN32
     int rc = QProcess::startDetached(
-                QString("open -a Installer ") + osx_download_path);
+                QString("open -a Installer ") + osxDownloadPath);
 #else
-    int rc = QDesktopServices::openUrl(QUrl::fromLocalFile(win_download_path));
+    int rc = QDesktopServices::openUrl(QUrl::fromLocalFile(winDownloadPath));
 #endif
     return rc ? ok : install_error;
 }
