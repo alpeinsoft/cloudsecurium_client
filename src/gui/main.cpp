@@ -170,7 +170,7 @@ int main(int argc, char **argv)
         }
     }
 
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     signal(
             SIGTERM,
             [](int)->void

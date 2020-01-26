@@ -38,7 +38,7 @@
 #include "creds/abstractcredentials.h"
 #include "creds/dummycredentials.h"
 
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
 #include "encrypted_folder.h"
 #endif
 
@@ -651,7 +651,7 @@ void OwncloudSetupWizard::slotAssistantFinished(int result)
         bool startFromScratch = _ocWizard->field("OCSyncFromScratch").toBool();
 
         if (!startFromScratch || ensureStartFromScratch(localFolder)) {
-#if ADD_ENCRYPTION
+#if LOCAL_FOLDER_ENCRYPTION
             if (_ocWizard->encryptionState() && startFromScratch) {
                 LOG("got passwd2: %s\n", _ocWizard->password().toUtf8().data());
                 EncryptedFolder::generateKey(localFolder, _ocWizard->password().toUtf8().data());

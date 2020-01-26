@@ -29,7 +29,7 @@
 #include <QUuid>
 #include <set>
 
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
 #include "encrypted_folder.h"
 #endif
 
@@ -100,6 +100,9 @@ public:
 class Folder : public QObject
 {
     Q_OBJECT
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    friend class AccountSettings;
+#endif
 
 public:
     Folder(const FolderDefinition &definition, AccountState *accountState, QObject *parent = nullptr);
@@ -140,10 +143,15 @@ public:
 
     bool encryptionState() const;
 
-#ifdef ADD_ENCRYPTION
-    bool addEncryption();
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    bool encrypt();
     EncryptedFolder* encryptedFolder;
-    bool m_encryptionState = false;
+    QString _cryptedPath = "";
+
+    QString cryptedPath() const;
+    QString uncryptedPath() const;
+    bool isEncryptionRunning();
+    bool isEncrypted() const;
 #endif
 
     qint64 *pid = nullptr;

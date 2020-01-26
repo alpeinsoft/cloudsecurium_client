@@ -773,6 +773,38 @@ void AccountSettings::slotFolderWizardAccepted()
     }
 }
 
+#ifdef LOCAL_FOLDER_ENCRYPTION
+void AccountSettings::slotRestartEncryptedFolder()
+{
+    FolderMan *folderMan = FolderMan::instance();
+    auto folder = folderMan->folder(selectedFolderAlias());
+    auto definition = folder->_definition;
+    definition.paused = false;
+    bool ok;
+    auto selectiveSyncBlackList = folder->journalDb()->getSelectiveSyncList(
+                    SyncJournalDb::SelectiveSyncBlackList, &ok);
+   LOG("before slotRemoveCurrentFolder()\n");
+    slotRemoveCurrentFolder(true);
+    definition.ignoreHiddenFiles = folderMan->ignoreHiddenFiles();
+
+    if (folderMan->navigationPaneHelper().showInExplorerNavigationPane())
+        definition.navigationPaneClsid = QUuid::createUuid();
+
+    folderMan->setSyncEnabled(true);
+
+    Folder *f = folderMan->addFolder(_accountState, definition);
+    if (f) {
+        f->journalDb()->setSelectiveSyncList(SyncJournalDb::SelectiveSyncBlackList, selectiveSyncBlackList);
+
+        // The user already accepted the selective sync dialog. everything is in the white list
+        f->journalDb()->setSelectiveSyncList(SyncJournalDb::SelectiveSyncWhiteList,
+            QStringList() << QLatin1String("/"));
+        folderMan->scheduleAllFolders();
+        emit folderChanged();
+    }
+}
+#endif
+
 void AccountSettings::slotFolderWizardRejected()
 {
     qCInfo(lcAccountSettings) << "Folder wizard cancelled";
@@ -780,7 +812,7 @@ void AccountSettings::slotFolderWizardRejected()
     folderMan->setSyncEnabled(true);
 }
 
-void AccountSettings::slotRemoveCurrentFolder()
+void AccountSettings::slotRemoveCurrentFolder(bool withoutUi)
 {
     FolderMan *folderMan = FolderMan::instance();
     auto folder = folderMan->folder(selectedFolderAlias());
@@ -802,11 +834,14 @@ void AccountSettings::slotRemoveCurrentFolder()
             messageBox.addButton(tr("Remove Folder Sync Connection"), QMessageBox::YesRole);
         messageBox.addButton(tr("Cancel"), QMessageBox::NoRole);
 
+        if (withoutUi)
+            goto removal;
         messageBox.exec();
         if (messageBox.clickedButton() != yesButton) {
             return;
         }
 
+removal:
         folderMan->removeFolder(folder);
         _model->removeRow(row);
 
@@ -874,6 +909,15 @@ void AccountSettings::slotEnableCurrentFolder()
         if (!f) {
             return;
         }
+
+#ifdef LOCAL_FOLDER_ENCRYPTION
+        if (f->isEncrypted() && !f->isEncryptionRunning()) {
+            LOG("before slotRestartEncryptedFolder()\n");
+            slotRestartEncryptedFolder();
+            return;
+        }
+#endif
+
         currentlyPaused = f->syncPaused();
         if (!currentlyPaused) {
             // check if a sync is still running and if so, ask if we should terminate.

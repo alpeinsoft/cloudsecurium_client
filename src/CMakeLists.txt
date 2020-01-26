@@ -48,7 +48,7 @@ endif()
 include_directories(
     ${CMAKE_SOURCE_DIR}/src/3rdparty
 )
-if(ADD_ENCRYPTION)
+if(LOCAL_FOLDER_ENCRYPTION)
     add_subdirectory(cryptfs)
 endif()
 add_subdirectory(csync)

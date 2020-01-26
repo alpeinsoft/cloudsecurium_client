@@ -133,7 +133,7 @@ set(client_SRCS
     wizard/slideshow.cpp
 )
 
-if(ADD_ENCRYPTION)
+if(LOCAL_FOLDER_ENCRYPTION)
     list(APPEND client_SRCS encrypted_folder.cpp)
 endif()
 
@@ -320,7 +320,7 @@ set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
 set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
         INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}/${APPLICATION_EXECUTABLE};${CMAKE_INSTALL_RPATH}" )
 
-if(ADD_ENCRYPTION)
+if(LOCAL_FOLDER_ENCRYPTION)
 target_link_libraries( ${APPLICATION_EXECUTABLE} cryptfs )
 endif()
 

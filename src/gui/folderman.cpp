@@ -918,6 +918,13 @@ Folder *FolderMan::addFolderInternal(FolderDefinition folderDefinition,
         _disabledFolders.insert(folder);
     }
 
+    #ifdef LOCAL_FOLDER_ENCRYPTION
+        if (folder->isEncrypted() && !folder->isEncryptionRunning()) {
+            LOG("EncryptedFolder is mounted unsuccessfully, abort\n");
+            return folder;
+        }
+    #endif
+
     // See matching disconnects in unloadFolder().
     connect(folder, &Folder::syncStarted, this, &FolderMan::slotFolderSyncStarted);
     connect(folder, &Folder::syncFinished, this, &FolderMan::slotFolderSyncFinished);

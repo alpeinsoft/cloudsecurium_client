@@ -3,7 +3,7 @@
 # kill the old version. see issue #2044
 killall @APPLICATION_EXECUTABLE@
 
-if [[ "@ADD_ENCRYPTION@" -ne 1 ]]
+if [[ "@LOCAL_FOLDER_ENCRYPTION@" -ne 1 ]]
 then
     exit 0
 fi

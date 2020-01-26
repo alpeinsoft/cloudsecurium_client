@@ -32,7 +32,7 @@
 #include "creds/abstractcredentials.h"
 #include "networkjobs.h"
 
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
 #include "encrypted_folder.h"
 #endif
 
@@ -121,7 +121,7 @@ void OwncloudAdvancedSetupPage::initializePage()
     // Update the local folder - this is not guaranteed to find a good one
     QString goodLocalFolder = FolderMan::instance()->findGoodPathForNewSyncFolder(localFolder(), serverUrl());
     wizard()->setProperty("localFolder", goodLocalFolder);
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     updateEncryptionUi(goodLocalFolder);
 #else
     _passwordValid = true;
@@ -342,7 +342,7 @@ void OwncloudAdvancedSetupPage::slotSelectFolder()
         _ui.pbSelectLocalFolder->setText(dir);
         wizard()->setProperty("localFolder", dir);
         updateStatus();
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
         updateEncryptionUi(dir);
 #endif
     }
@@ -400,7 +400,7 @@ void OwncloudAdvancedSetupPage::slotSelectiveSyncClicked()
     }
 }
 
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
 void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
 {
     _ui.password1->clear();
@@ -536,7 +536,7 @@ void OwncloudAdvancedSetupPage::slotPasswordChanged(const QString &password)
 
 void OwncloudAdvancedSetupPage::slotRadioButtonClicked()
 {
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     updateEncryptionUi(wizard()->property("localFolder").toString());
 #endif
     emit completeChanged();
@@ -544,7 +544,7 @@ void OwncloudAdvancedSetupPage::slotRadioButtonClicked()
 
 void OwncloudAdvancedSetupPage::slotCleanSyncClicked()
 {
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     updateEncryptionUi(QString());
 #endif
     emit completeChanged();

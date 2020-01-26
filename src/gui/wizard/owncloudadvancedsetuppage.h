@@ -68,7 +68,7 @@ private slots:
     void slotCleanSyncClicked();
 
 private:
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     void updateEncryptionUi(const QString &folder);
 #endif
     void setupCustomization();

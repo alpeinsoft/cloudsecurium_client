@@ -43,7 +43,7 @@
 #include <QtCore>
 #include <QInputDialog>
 
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
 #include "encrypted_folder.h"
 #include "fusedialog.h"
 #include "qapplication.h"
@@ -66,12 +66,17 @@ Folder::Folder(const FolderDefinition &definition,
     , _journal(_definition.absoluteJournalPath())
     , _fileLog(new SyncRunFileLog)
     , _saveBackwardsCompatible(false)
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     , encryptedFolder(nullptr)
+    , _cryptedPath("")
 #endif
 {
-#ifdef ADD_ENCRYPTION
-    addEncryption();
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    bool success_cfs_mount = false;
+    if (EncryptedFolder::checkKey(_definition.localPath)) {
+        this->_cryptedPath = _definition.localPath;
+        success_cfs_mount = encrypt();
+    }
 #endif
     _timeSinceLastSyncStart.start();
     _timeSinceLastSyncDone.start();
@@ -124,12 +129,36 @@ Folder::Folder(const FolderDefinition &definition,
 
     connect(ProgressDispatcher::instance(), &ProgressDispatcher::folderConflicts,
         this, &Folder::slotFolderConflicts);
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    if (!success_cfs_mount)
+        slotTerminateSync();
+#endif
 }
 
-#ifdef ADD_ENCRYPTION
-bool Folder::addEncryption()
+#ifdef LOCAL_FOLDER_ENCRYPTION
+bool Folder::isEncryptionRunning()
 {
-    if (!EncryptedFolder::checkKey(_definition.localPath))
+    return this->encryptedFolder;
+}
+
+bool Folder::isEncrypted() const
+{
+    return this->cryptedPath().length();
+}
+
+QString Folder::uncryptedPath() const
+{
+    return this->encryptedFolder->mountPath();
+}
+
+QString Folder::cryptedPath() const
+{
+    return this->_cryptedPath;
+}
+
+bool Folder::encrypt()
+{
+    if (!EncryptedFolder::checkKey(cryptedPath()))
         return false;
     if (!Theme::instance()->isFuseAvailable()) {
         setSyncPaused(true);
@@ -150,7 +179,7 @@ bool Folder::addEncryption()
         LOG("got password: %s\n", password.toUtf8().data());
         if (ok) {
             this->encryptedFolder = new EncryptedFolder(
-                    _definition.localPath,
+                    this->cryptedPath(),
                     password.toUtf8().data()
                     );
             if (!this->encryptedFolder->isRunning()) {
@@ -163,20 +192,18 @@ bool Folder::addEncryption()
                         );
                 continue;
             }
-            checkLocalPath();
             return true;
-        } else {
-            LOG("Encrypt login cancelled\n");
-            setSyncPaused(true);
-            return false;
         }
+        LOG("Encrypt login cancelled\n");
+        setSyncPaused(true);
+        return false;
     } while(1);
 }
 #endif
 
 Folder::~Folder()
 {
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     delete encryptedFolder;
 #endif
     // Reset then engine first as it will abort and try to access members of the Folder
@@ -186,9 +213,11 @@ Folder::~Folder()
 void Folder::checkLocalPath()
 {
     QFileInfo fi;
- #ifdef ADD_ENCRYPTION
-    if (this->encryptedFolder != nullptr && this->encryptedFolder->isRunning()) {
-        _canonicalLocalPath = this->encryptedFolder->mountPath();
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    if (isEncrypted()) {
+        if (!isEncryptionRunning())
+            return;
+        _canonicalLocalPath = this->uncryptedPath();
         fi = QFileInfo(_canonicalLocalPath);
         _canonicalLocalPath = fi.canonicalFilePath();
         LOG("canonicalLocalPath is now %s\n", _canonicalLocalPath.toUtf8().data());
@@ -207,7 +236,7 @@ void Folder::checkLocalPath()
         } else if (!_canonicalLocalPath.endsWith('/')) {
             _canonicalLocalPath.append('/');
         }
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     }
 #endif
     if (fi.isDir() && fi.isReadable()) {
@@ -324,17 +353,17 @@ void Folder::setSyncPaused(bool paused)
         return;
     }
 
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     if (
         !paused
         && this->encryptedFolder == nullptr
-        && EncryptedFolder::checkKey(_definition.localPath)
+        && EncryptedFolder::checkKey(cryptedPath())
             ) {
         LOG("before propose_fuse_install\n");
         if (!Theme::instance()->isFuseAvailable())
             fuseInstallDialog();
         LOG("tried to resume encrypted folder\n");
-        if (!this->addEncryption()) {
+        if (!this->encrypt()) {
             return;
         }
     }

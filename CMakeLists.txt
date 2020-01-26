@@ -3,8 +3,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 project(client)
 
-add_definitions(-DADD_ENCRYPTION)
-set(ADD_ENCRYPTION "1")
+add_definitions(-DLOCAL_FOLDER_ENCRYPTION)
+set(LOCAL_FOLDER_ENCRYPTION "1")
 if (WIN32)
     include_directories(AFTER "${CRYPTFS_LIBRARY}")
     link_directories("${CRYPTFS_LIBRARY}")

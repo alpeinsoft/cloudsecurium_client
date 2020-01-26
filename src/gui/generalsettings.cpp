@@ -56,7 +56,7 @@ GeneralSettings::GeneralSettings(QWidget *parent)
 {
     _ui->setupUi(this);
 
-#ifdef ADD_ENCRYPTION
+#ifdef LOCAL_FOLDER_ENCRYPTION
     if (Theme::instance()->isFuseAvailable())
         _ui->fuseInstallProposal->hide();
 

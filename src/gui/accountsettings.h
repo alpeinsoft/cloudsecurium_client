@@ -67,6 +67,9 @@ signals:
     void styleChanged();
 
 public slots:
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    void slotRestartEncryptedFolder();
+#endif
     void slotOpenOC();
     void slotUpdateQuota(qint64, qint64);
     void slotAccountStateChanged();
@@ -80,7 +83,7 @@ protected slots:
     void slotScheduleCurrentFolder();
     void slotScheduleCurrentFolderForceRemoteDiscovery();
     void slotForceSyncCurrentFolder();
-    void slotRemoveCurrentFolder();
+    void slotRemoveCurrentFolder(bool withoutUi = false);
     void slotOpenCurrentFolder(); // sync folder
     void slotOpenCurrentLocalSubFolder(); // selected subfolder in sync folder
     void slotEditCurrentIgnoredFiles();
