@@ -284,11 +284,7 @@ bool OwncloudAdvancedSetupPage::isConfirmBigFolderChecked() const
 
 bool OwncloudAdvancedSetupPage::validatePage()
 {
-    if (!_created
-#ifdef ADD_ENCRYPTION
-             || (encryptionState() && !EncryptedFolder::checkKey(localFolder()))
-#endif
-            ) {
+    if (!_created) {
         setErrorString(QString());
         _checking = true;
         startSpinner();

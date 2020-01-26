@@ -444,13 +444,6 @@ bool OwncloudSetupWizard::checkDowngradeAdvised(QNetworkReply *reply)
 
 void OwncloudSetupWizard::slotCreateLocalAndRemoteFolders(const QString &localFolder, const QString &remoteFolder)
 {
-#ifdef ADD_ENCRYPTION
-    LOG("in slotCreate...\n");
-    if (_ocWizard->encryptionState()) {
-        LOG("got passwd1: %s, file: %s\n", _ocWizard->password().toUtf8().data(), localFolder.toUtf8().data());
-        EncryptedFolder::generateKey(localFolder, _ocWizard->password().toUtf8().data());
-    }
-#endif
     qCInfo(lcWizard) << "Setup local sync folder for new oC connection " << localFolder;
     const QDir fi(localFolder);
 
