@@ -652,9 +652,14 @@ void OwncloudSetupWizard::slotAssistantFinished(int result)
 
         if (!startFromScratch || ensureStartFromScratch(localFolder)) {
 #if LOCAL_FOLDER_ENCRYPTION
-            if (_ocWizard->encryptionState() && startFromScratch) {
-                LOG("got passwd2: %s\n", _ocWizard->password().toUtf8().data());
-                EncryptedFolder::generateKey(localFolder, _ocWizard->password().toUtf8().data());
+            if (_ocWizard->encryptionState()) {
+                QString raw_password = _ocWizard->password();
+                auto password = raw_password.toUtf8();
+                EncryptedFolder::generateKey(localFolder, password.constData());
+                LOG(".key created inside %s\n", localFolder.toUtf8().data());
+                nullifyString(&password);
+                nullifyString(raw_password);
+                _ocWizard->deletePasswordUi();
             }
 #endif
             qCInfo(lcWizard) << "Adding folder definition for" << localFolder << _remoteFolder;

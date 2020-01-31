@@ -166,9 +166,10 @@ bool Folder::encrypt()
     }
 
     bool ok = false;
-    QString password;
+    QString raw_password;
+    QByteArray password;
     do {
-        password = QInputDialog::getText(
+        raw_password = QInputDialog::getText(
                     nullptr,
                     QString("Password"),
                     QString("Password for "+_definition.localPath),
@@ -176,11 +177,11 @@ bool Folder::encrypt()
                     nullptr,
                     &ok
                     );
-        LOG("got password: %s\n", password.toUtf8().data());
+        password = raw_password.toUtf8();
         if (ok) {
             this->encryptedFolder = new EncryptedFolder(
                     this->cryptedPath(),
-                    password.toUtf8().data()
+                    password.constData()
                     );
             if (!this->encryptedFolder->isRunning()) {
                 delete encryptedFolder;
@@ -192,6 +193,8 @@ bool Folder::encrypt()
                         );
                 continue;
             }
+            nullifyString(raw_password);
+            nullifyString(password);
             return true;
         }
         LOG("Encrypt login cancelled\n");

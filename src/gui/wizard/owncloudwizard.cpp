@@ -150,6 +150,11 @@ QString OwncloudWizard::password() const
     return _advancedSetupPage->password();
 }
 
+void OwncloudWizard::deletePasswordUi()
+{
+    _advancedSetupPage->deletePasswordUi();
+}
+
 QString OwncloudWizard::ocUrl() const
 {
     QString url = field("OCUrl").toString().simplified();

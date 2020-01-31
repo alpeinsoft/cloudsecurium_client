@@ -6,7 +6,7 @@ extern "C" {
     #include "cryptfs.h"
 }
 
-EncryptedFolder::EncryptedFolder(QString local_path, char *password)
+EncryptedFolder::EncryptedFolder(QString local_path, const char *password)
 {
     LOG("start dummy: with mnt_path %s\n", local_path.toUtf8().data());
     if (!checkKey(local_path))
@@ -101,7 +101,7 @@ bool EncryptedFolder::checkKey(const QString &folder) {
     return QDir(folder).exists(QString(".key"));
 }
 
-void EncryptedFolder::generateKey(const QString &folder_path, char* passwd) {
+void EncryptedFolder::generateKey(const QString &folder_path, const char* passwd) {
     QDir folder = QDir(folder_path);
     if (!folder.exists())
         folder.mkpath(".");
@@ -139,4 +139,18 @@ QString EncryptedFolder::generateMountPath(const QString &folder)
 
 QString EncryptedFolder::mountPath() {
     return mount_path;
+}
+
+void nullifyString(QString password)
+{
+    QChar *chars = const_cast<QChar*>(password.constData());
+    for (int i = 0; i < password.length(); ++i)
+        chars[i] = 0;
+}
+
+void nullifyString(QByteArray *password)
+{
+    char *chars = const_cast<char*>(password->constData());
+    for (int i = 0; i < password->length(); ++i)
+        chars[i] = 0;
 }

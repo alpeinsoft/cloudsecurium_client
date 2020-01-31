@@ -43,6 +43,7 @@ public:
 
     bool encryptionState() const;
     QString password() const;
+    void deletePasswordUi();
 
     QStringList selectiveSyncBlacklist() const;
     bool isConfirmBigFolderChecked() const;

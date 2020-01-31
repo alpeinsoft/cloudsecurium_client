@@ -43,14 +43,17 @@ class EncryptedFolder
         }
     } *loop = nullptr;
 public:
-    EncryptedFolder(QString mount_path, char *password);
+    EncryptedFolder(QString mount_path, const char *password);
     ~EncryptedFolder();
     bool isRunning();
 
     static bool checkKey(const QString &folder);
-    static void generateKey(const QString &folder, char *password);
+    static void generateKey(const QString &folder, const char *password);
     QString generateMountPath(const QString &folder);
     QString mountPath();
 };
+
+void nullifyString(QString password);
+void nullifyString(QByteArray *password);
 
 #endif

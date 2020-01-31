@@ -272,6 +272,16 @@ QString OwncloudAdvancedSetupPage::password() const
     return wizard()->property("password").toString();
 }
 
+// QLineEdit nullifies it's contents only on deletion. Due to the modal
+// password asking in folder constructor, without these deletiond,
+// passwords inside OwncloudAdvancedSetupPage otherwise would be accessible
+// all that time.
+void OwncloudAdvancedSetupPage::deletePasswordUi()
+{
+    delete this->_ui.password1;
+    delete this->_ui.password2;
+}
+
 QStringList OwncloudAdvancedSetupPage::selectiveSyncBlacklist() const
 {
     return _selectiveSyncBlacklist;

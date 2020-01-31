@@ -71,6 +71,7 @@ public:
 
     bool encryptionState() const;
     QString password() const;
+    void deletePasswordUi();
 
     void enableFinishOnResultWidget(bool enable);
 
