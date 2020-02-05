@@ -40,7 +40,6 @@ EncryptedFolder::EncryptedFolder(QString local_path, char *password)
         return;
     }
     LOG("mount_rc: %d\n", mount_rc);
-    this->mount_path += QString("/");
     this->loop = new CryptfsLoop(this->cfs);
     LOG("Created cryptfs loop at %lu\n", this->loop);
     this->loop->start();
@@ -129,14 +128,12 @@ QString EncryptedFolder::generateMountPath(const QString &folder)
     QString path = QString(folder);
     if (path.endsWith("/"))
         path.chop(1);
-    path += QString("_UNCRYPT");
+    path += QString("_UNCRYPT/");
     QDir uncr(QDir::toNativeSeparators(path));
     if (uncr.exists())
         uncr.removeRecursively();
     uncr.mkpath(".");
-    //path += QString(QDir::separator());
     LOG("Created %s\n", path.toUtf8().data());
-    LOG("folder: %s\n", folder.toUtf8().data());
     return path;
 }
 

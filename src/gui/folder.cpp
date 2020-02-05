@@ -218,8 +218,6 @@ void Folder::checkLocalPath()
         if (!isEncryptionRunning())
             return;
         _canonicalLocalPath = this->uncryptedPath();
-        fi = QFileInfo(_canonicalLocalPath);
-        _canonicalLocalPath = fi.canonicalFilePath();
         LOG("canonicalLocalPath is now %s\n", _canonicalLocalPath.toUtf8().data());
     }
     else {
