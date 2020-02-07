@@ -57,6 +57,10 @@
 
 #include "account.h"
 
+#ifdef LOCAL_FOLDER_ENCRYPTION
+#include "fusedialog.h"
+#endif
+
 namespace OCC {
 
 Q_LOGGING_CATEGORY(lcAccountSettings, "nextcloud.gui.account.settings", QtInfoMsg)
@@ -776,6 +780,10 @@ void AccountSettings::slotFolderWizardAccepted()
 #ifdef LOCAL_FOLDER_ENCRYPTION
 void AccountSettings::slotRestartEncryptedFolder()
 {
+    if (!Theme::instance()->isFuseAvailable()) {
+        fuseInstallDialog();
+        return;
+    }
     FolderMan *folderMan = FolderMan::instance();
     auto folder = folderMan->folder(selectedFolderAlias());
     auto definition = folder->_definition;

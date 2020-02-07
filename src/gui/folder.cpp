@@ -158,8 +158,6 @@ QString Folder::cryptedPath() const
 
 bool Folder::encrypt()
 {
-    if (!EncryptedFolder::checkKey(cryptedPath()))
-        return false;
     if (!Theme::instance()->isFuseAvailable()) {
         setSyncPaused(true);
         return false;
@@ -353,21 +351,12 @@ void Folder::setSyncPaused(bool paused)
     if (paused == _definition.paused) {
         return;
     }
-
 #ifdef LOCAL_FOLDER_ENCRYPTION
-    if (
-        !paused
-        && this->encryptedFolder == nullptr
-        && EncryptedFolder::checkKey(cryptedPath())
-            ) {
-        LOG("before propose_fuse_install\n");
-        if (!Theme::instance()->isFuseAvailable())
-            fuseInstallDialog();
-        LOG("tried to resume encrypted folder\n");
-        if (!this->encrypt()) {
-            return;
-        }
-    }
+    if (!paused
+            && this->encryptedFolder == nullptr
+            && EncryptedFolder::checkKey(cryptedPath())
+            && !this->encrypt())
+        return;
 #endif
 
     _definition.paused = paused;
