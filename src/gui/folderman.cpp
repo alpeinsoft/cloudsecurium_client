@@ -920,7 +920,7 @@ Folder *FolderMan::addFolderInternal(FolderDefinition folderDefinition,
 
     #ifdef LOCAL_FOLDER_ENCRYPTION
         if (folder->isEncrypted() && !folder->isEncryptionRunning()) {
-            LOG("EncryptedFolder is mounted unsuccessfully, abort\n");
+            ERROR("EncryptedFolder is mounted unsuccessfully, abort\n");
             return folder;
         }
     #endif

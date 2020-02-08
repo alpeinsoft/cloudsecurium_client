@@ -42,6 +42,8 @@
 #include "encrypted_folder.h"
 #endif
 
+#define CURRENT_LC lcWizard
+
 namespace OCC {
 
 OwncloudSetupWizard::OwncloudSetupWizard(QObject *parent)

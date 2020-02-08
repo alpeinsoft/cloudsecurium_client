@@ -27,6 +27,8 @@
 
 #include <stdio.h>
 
+#define CURRENT_LC lcUpdater
+
 namespace OCC {
 
 static const char updateAvailableC[] = "Updater/updateAvailable";

@@ -8,13 +8,6 @@ extern "C" {
     #include "cryptfs.h"
 }
 
-#define CRYPTFS_UTILS_DEBUG
-
-#ifdef CRYPTFS_UTILS_DEBUG
-    #define LOG(format, ...) fprintf(stderr, format, ##__VA_ARGS__)
-#else
-    #define LOG(format, ...)
-#endif
 
 class EncryptedFolder
 {

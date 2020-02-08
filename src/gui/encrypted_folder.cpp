@@ -6,6 +6,9 @@ extern "C" {
     #include "cryptfs.h"
 }
 
+Q_LOGGING_CATEGORY(lcLocalFolderEncryption, "cloudsecurium.localFolderEncryption", QtInfoMsg)
+#define CURRENT_LC lcLocalFolderEncryption
+
 EncryptedFolder::EncryptedFolder(QString local_path, const char *password)
 {
     LOG("start dummy: with mnt_path %s\n", local_path.toUtf8().data());

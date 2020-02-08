@@ -51,6 +51,49 @@ include_directories(
 if(LOCAL_FOLDER_ENCRYPTION)
     add_subdirectory(cryptfs)
 endif()
+
+option(CS_REDIRECT_ERRORS_TO_FILE
+    "Redirect output of the ERROR function to /tmp/cs_log_error" OFF)
+if(CS_REDIRECT_ERRORS_TO_FILE)
+    message(STATUS "CS_REDIRECT_ERRORS_TO_FILE ON")
+    add_definitions(-DCS_REDIRECT_ERRORS_TO_FILE)
+endif()
+
+option(CS_REDIRECT_ERRORS_TO_LOGGER
+    "Redirect output of the ERROR function to the application logger" OFF)
+if(CS_REDIRECT_ERRORS_TO_LOGGER)
+    message(STATUS "CS_REDIRECT_ERRORS_TO_LOGGER ON")
+    add_definitions(-DCS_REDIRECT_ERRORS_TO_LOGGER)
+endif()
+
+option(CS_ENABLE_DEBUG "Enable output from the LOG function" OFF)
+if(CS_ENABLE_DEBUG)
+    message(STATUS "CS_ENABLE_DEBUG ON")
+    add_definitions(-DCS_ENABLE_DEBUG)
+endif()
+
+option(CS_REDIRECT_DEBUG_TO_LOGGER
+    "Redirect output of the LOG function to the application logger" OFF)
+if(CS_REDIRECT_DEBUG_TO_LOGGER)
+    message(STATUS "CS_REDIRECT_DEBUG_TO_LOGGER ON")
+    add_definitions(-DCS_REDIRECT_DEBUG_TO_LOGGER)
+endif()
+
+option(CS_REDIRECT_DEBUG_TO_FILE
+    "Redirect output of the LOG function to /tmp/cs_log_debug" OFF)
+if(CS_REDIRECT_DEBUG_TO_FILE)
+    message(STATUS "CS_REDIRECT_DEBUG_TO_FILE ON")
+    add_definitions(-DCS_REDIRECT_DEBUG_TO_FILE)
+endif()
+
+option(CS_ALL_MODULES_DEBUG
+    "Get output from the LOG function reguardless of ENABLE_MODULE_DEBUG definitions"
+    OFF)
+if(CS_ALL_MODULES_DEBUG)
+    message(STATUS "CS_ALL_MODULES_DEBUG ON")
+    add_definitions(-DCS_ALL_MODULES_DEBUG)
+endif()
+
 add_subdirectory(csync)
 add_subdirectory(libsync)
 if (NOT BUILD_LIBRARIES_ONLY)

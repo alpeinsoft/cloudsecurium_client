@@ -8,6 +8,9 @@
 #include <QProcess>
 #include <QDir>
 
+Q_LOGGING_CATEGORY(lcFuseDialog, "cloudsecurium.gui.localFolderEncryption", QtInfoMsg)
+#define CURRENT_LC lcFuseDialog
+
 static const QString osxfuseUrl = QString("https://updates.securium.ch/csdc/osxfuse.pkg");
 static const QString osxDownloadPath = QString("/tmp/osxfuse.pkg");
 
@@ -53,7 +56,7 @@ bool fuseDownload()
 install_status fuseInstall()
 {
     if (fuseDownload()) {
-        LOG("downloadFuse returned nonzero");
+        ERROR("downloadFuse returned nonzero");
         return download_error;
     }
 #ifndef _WIN32

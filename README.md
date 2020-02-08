@@ -101,3 +101,112 @@ https://github.com/nextcloud/desktop.
     WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
     or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
     for more details.
+
+# Debugging
+Cloudserurium provides additional debugging options that are highly
+customizable and concise to use.
+
+## ERROR function
+ERROR function helps to report occured errors. It's syntax is similar to
+printf function, but it also provides information about file, line and
+function where the ERROR is called.
+
+```C++
+// example.cpp
+#include "common/utility.h"
+
+void example()
+{
+    ERROR("example #%d\n", 1);
+}
+// output would be:
+// example.cpp +6, example() Error: example #1
+```
+
+By default, ERROR's output is directed to the **stderr**, but you may redirect
+it to **file** or to application's **log browser**.
+
+In order to redirect it to file (currently it is **/tmp/cs_log_error**), set
+cmake option **-D CS_REDIRECT_ERRORS_TO_FILE=ON**.
+
+In order to redirect ERROR's output to the **log browser**, set cmake option
+**-D CS_REDIRECT_ERRORS_TO_LOGGER=ON**. It also requires extra code inside
+modules where you wish to use ERROR: you have to define **CURRENT_LC** for
+ERROR to use.
+
+```C++
+// example.cpp, CS_REDIRECT_ERRORS_TO_LOGGER is set
+#include "common/utility.h"
+
+Q_LOGGING_CATEGORY(lcTest, "test.test.test", QtInfoMsg)
+#define CURRENT_LC lcTest
+
+void example()
+{
+    ERROR("example #%d\n", 2);
+}
+// output inside log browser will be:
+// example.cpp +9, example() Error: example #2
+// plus additional info that is provided by logger handler
+```
+
+## LOG function
+LOG function is designed to help with debugging. It's syntax is similar to
+printf fuction, but it also provides information about file, line and
+function where the LOG is called.
+
+It has the following features:
+1. Enable debug output only for the modules you're interested in.
+2. Enable debug output from all the modules.
+3. Suppress all the debug output.
+4. Output redirection to stdout, log browser and file.
+
+By default, output of the LOG function is supressed, output is directed to the
+stdout and debug output from all the modules is disabled.
+
+In order to turn LOG's output on, cmake build option **-D CS_ENABLE_DEBUG=ON**
+has to be set. You also have to define **ENABLE_MODULE_DEBUG** inside the file
+you wish to use LOG function.
+
+```C++
+// example.cpp, CS_ENABLE_DEBUG is set
+#include "common/utility.h"
+#define ENABLE_MODULE_DEBUG true
+
+void example()
+{
+    LOG("example #%d\n", 3);
+}
+// output would be:
+// example.cpp +7, example(): example #3
+```
+
+If you set cmake build option **-D CS_ALL_MODULES_DEBUG=ON**, debug output
+from all the modules will be enabled reguardless of **ENABLE_MODULE_DEBUG**
+definitions.
+
+If you would like to redirect LOG's output to **file** (currently it is
+**/tmp/cs_log_debug**), you have to set **-D CS_REDIRECT_DEBUG_TO_FILE=ON**.
+
+If you would like to redirect LOG's output to the **log browser**, you have
+to set **-D CS_REDIRECT_DEBUG_TO_LOGGER=ON**. It also requires extra code
+inside modules where you wish to use LOG: you have to define **CURRENT_LC**
+for LOG to use. (Don't forget to define **ENABLE_MODULE_DEBUG** unless you
+use **CS_REDIRECT_DEBUG_TO_LOGGER** option).
+
+```C++
+// example.cpp, CS_ENABLE_DEBUG, CS_REDIRECT_DEBUG_TO_LOGGER are set
+#include "common/utility.h"
+
+Q_LOGGING_CATEGORY(lcTest, "test.test.test", QtInfoMsg)
+#define CURRENT_LC lcTest
+#define ENABLE_MODULE_DEBUG true
+
+void example()
+{
+    LOG("example #%d\n", 4);
+}
+// output inside log browser will be:
+// example.cpp +10, example(): example #4
+// plus additional info that is provided by logger handler
+```

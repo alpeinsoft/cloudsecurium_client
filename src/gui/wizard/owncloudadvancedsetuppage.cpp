@@ -35,6 +35,7 @@
 #ifdef LOCAL_FOLDER_ENCRYPTION
 #include "encrypted_folder.h"
 #endif
+#define CURRENT_LC lcWizard
 
 namespace OCC {
 

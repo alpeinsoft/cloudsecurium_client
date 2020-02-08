@@ -9,6 +9,8 @@
 #include <QtCore/QtDebug>
 #include <QtCore/QFile>
 
+#define CURRENT_LC lcUpdater
+
 namespace OCC {
 
 void UpdateInfo::setVersion(const QString &v)

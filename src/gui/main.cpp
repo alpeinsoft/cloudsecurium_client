@@ -175,7 +175,7 @@ int main(int argc, char **argv)
             SIGTERM,
             [](int)->void
             {
-                LOG("doing unmount\n");
+                ERROR("Caught SIGTERM, doing unmount\n");
                 FolderMan::instance()->unloadAndDeleteAllFolders();
                 exit(0);
             }
@@ -184,7 +184,7 @@ int main(int argc, char **argv)
             SIGINT,
             [](int)->void
             {
-                LOG("doing unmount\n");
+                ERROR("Caught SIGINT, doing unmount\n");
                 FolderMan::instance()->unloadAndDeleteAllFolders();
                 exit(0);
             }
@@ -193,7 +193,7 @@ int main(int argc, char **argv)
             SIGABRT,
             [](int)->void
             {
-                LOG("doing unmount\n");
+                ERROR("Caught SIGABRT, doing unmount\n");
                 FolderMan::instance()->unloadAndDeleteAllFolders();
                 exit(0);
             }

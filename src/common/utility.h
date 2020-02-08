@@ -278,20 +278,66 @@ inline bool Utility::isBSD()
 
 }
 
+#if defined(CS_REDIRECT_ERRORS_TO_LOGGER)
+    #define ERROR(format, ...) do { \
+        qCCritical(CURRENT_LC, \
+                "%s +%d, %s() Error: " format, \
+                __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); \
+    } while(0)
+#elif defined(CS_REDIRECT_ERRORS_TO_FILE)
+    #include <unistd.h>
+    #define ERROR(format, ...) do { \
+        FILE *f = fopen("/tmp/cs_log_error", "a"); \
+        fprintf(f, \
+                "%s +%d, %s() Error:" format, \
+                __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); \
+        fclose(f); \
+    } while(0)
+#else
+    #define ERROR(format, ...) do { \
+        fprintf(stderr, \
+                "%s +%d, %s() Error: " format, \
+                __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); \
+    } while(0)
+#endif
 
-extern "C" {
-#define CS_DEBUG
+#ifndef CS_ALL_MODULES_DEBUG
+    #define CS_ALL_MODULES_DEBUG false
+#else
+    #define CS_ALL_MODULES_DEBUG true
+#endif
+#define ENABLE_MODULE_DEBUG false
 
-#ifdef CS_DEBUG
-    #ifdef __APPLE__
+#ifdef CS_ENABLE_DEBUG
+    #if defined(CS_REDIRECT_DEBUG_TO_LOGGER)
+        #define LOG(format, ...) do { \
+        if (ENABLE_MODULE_DEBUG || CS_ALL_MODULES_DEBUG) \
+            qCInfo(CURRENT_LC, \
+                    "%s +%d, %s(): " format, \
+                    __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); \
+        } while(0)
+    #elif defined(CS_REDIRECT_DEBUG_TO_FILE)
         #include <unistd.h>
-        #define LOG(format, ...) do {FILE* foo = fopen("/tmp/cs_log_debug", "a"); fprintf(foo, format, ##__VA_ARGS__); fclose(foo);} while(0)
+        #define LOG(format, ...) do {\
+            if (!(ENABLE_MODULE_DEBUG || CS_ALL_MODULES_DEBUG)) \
+                break; \
+            FILE *f = fopen("/tmp/cs_log_debug", "a"); \
+            fprintf(f, \
+                    "%s +%d, %s(): " format, \
+                    __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); \
+            fclose(f); \
+        } while(0)
     #else
-        #define LOG(format, ...) do {fprintf(stderr, format, ##__VA_ARGS__);} while(0)
+        #define LOG(format, ...) do { \
+        if (ENABLE_MODULE_DEBUG || CS_ALL_MODULES_DEBUG) \
+            fprintf(stdout, \
+                    "%s +%d, %s(): " format, \
+                    __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); \
+            fflush(stdout); \
+        } while(0)
     #endif
 #else
     #define LOG(format, ...)
 #endif
-}
 
 #endif // UTILITY_H

@@ -35,6 +35,8 @@
 #undef Mirall
 #endif
 
+#define CURRENT_LC lcUtility
+
 namespace OCC {
 
 Theme *Theme::_instance = nullptr;
