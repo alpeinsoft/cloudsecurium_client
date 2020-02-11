@@ -26,6 +26,7 @@
 #include <QMessageBox>
 #include "clientsideencryption.h"
 #include "ui_mnemonicdialog.h"
+#include "version.h"
 
 namespace {
 static const char urlC[] = "url";
@@ -55,6 +56,24 @@ bool AccountManager::restore()
     if (settings->status() != QSettings::NoError || !settings->isWritable()) {
         qCWarning(lcAccountManager) << "Could not read settings from" << settings->fileName()
                                     << settings->status();
+        return false;
+    }
+
+    QVariant version = settings->value("full_version", QVariant());
+    if (version.isNull() || (version.toString() != MIRALL_VERSION_STRING)) {
+        LOG("incorrect, %s\n", MIRALL_VERSION_STRING);
+
+        QDir configDir(ConfigFile().configPath());
+        QStringList filters;
+        filters << "*.db" << "*.lst";
+        configDir.setNameFilters(filters);
+        foreach(QString file, configDir.entryList())
+            configDir.remove(file);
+
+        settings->remove("");
+        QVariant version(QString(MIRALL_VERSION_STRING));
+        settings->setValue(QString("full_version"), version);
+        settings->sync();
         return false;
     }
 
