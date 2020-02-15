@@ -42,7 +42,8 @@ public:
 
     static bool checkKey(const QString &folder);
     static void generateKey(const QString &folder, const char *password);
-    QString generateMountPath(const QString &folder);
+    static void mkEncryptionDir(const QString path);
+    static QString uncryptPathByEncryptPath(const QString path);
     QString mountPath();
 };
 

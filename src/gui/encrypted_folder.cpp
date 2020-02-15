@@ -20,7 +20,8 @@ EncryptedFolder::EncryptedFolder(QString local_path, const char *password)
     this->key_path = QString(this->encryption_path + QString(".key"));
     LOG("Cryptfs: key_path = %s\n", this->key_path.toUtf8().data());
 
-    this->mount_path = EncryptedFolder::generateMountPath(local_path);
+    this->mount_path = EncryptedFolder::uncryptPathByEncryptPath(local_path);
+    EncryptedFolder::mkEncryptionDir(this->mount_path);
     LOG("Cryptfs: mount_path = %s\n", this->mount_path.toUtf8().data());
 
     this->cfs = cryptfs_create(
@@ -127,18 +128,22 @@ void EncryptedFolder::generateKey(const QString &folder_path, const char* passwd
             );
 }
 
-QString EncryptedFolder::generateMountPath(const QString &folder)
+QString EncryptedFolder::uncryptPathByEncryptPath(const QString folder)
 {
     QString path = QString(folder);
     if (path.endsWith("/"))
         path.chop(1);
     path += QString("_UNCRYPT");
+    LOG("Path is: %s\n", path.toUtf8().data());
+    return path;
+}
+
+void EncryptedFolder::mkEncryptionDir(const QString path)
+{
     QDir uncr(QDir::toNativeSeparators(path));
     if (uncr.exists())
         uncr.removeRecursively();
     uncr.mkpath(".");
-    LOG("Created %s\n", path.toUtf8().data());
-    return path;
 }
 
 QString EncryptedFolder::mountPath() {

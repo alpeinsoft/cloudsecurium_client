@@ -33,6 +33,7 @@
 #include "networkjobs.h"
 
 #ifdef LOCAL_FOLDER_ENCRYPTION
+#include "accountmanager.h"
 #include "encrypted_folder.h"
 #endif
 #define CURRENT_LC lcWizard
@@ -420,8 +421,24 @@ void OwncloudAdvancedSetupPage::updateEncryptionUi(const QString &folder)
     _ui.encryptionState->setChecked(true);
     _ui.encryptionState->setEnabled(true);
     _ui.passwords->setEnabled(true);
+    _ui.sameFolderLabel->setVisible(false);
+    _ui.resolutionWidget->setEnabled(true);
     _passwordValid = false;
     wizard()->setProperty("encryptionState", true);
+
+    FolderMan *folder_manager = FolderMan::instance();
+    QString uncrypted_path = EncryptedFolder::uncryptPathByEncryptPath(folder);
+    LOG("checking if %s in use\n", folder.toUtf8().data());
+    if (folder_manager->folderForPath(uncrypted_path)
+            || folder_manager->folderForPath(folder)) {
+        LOG("It's already in use\n");
+        _ui.passwords->setEnabled(false);
+        _ui.sameFolderLabel->setVisible(true);
+        _ui.encryptionNotice->setVisible(false);
+        _ui.encryptionState->setEnabled(false);
+        _ui.resolutionWidget->setEnabled(false);
+        return;
+    }
 
     LOG("Soon I'll updateEncryptionUi according to: %s\n", folder.toLocal8Bit().data());
     if (EncryptedFolder::checkKey(folder)) {
@@ -497,22 +514,23 @@ void OwncloudAdvancedSetupPage::customizeStyle()
 
 void OwncloudAdvancedSetupPage::slotEncryptionStateChanged(bool value)
 {
-    if (value) {
-        _ui.passwords->setEnabled(true);
+    QString pass1 = _ui.password1->text();
+    QString pass2 = _ui.password2->text();
 
-        if (_ui.resolutionWidget->isVisible() && _ui.cbSyncFromScratch->isChecked()) {
-            if (_ui.password1->text().isEmpty()) _passwordValid = false;
-            else if (_ui.password1->text() != _ui.password2->text()) _passwordValid = false;
-            else _passwordValid = true;
-        } else {
-            _passwordValid = true;
-        }
-    } else {
+    if (!value) {
         _ui.passwords->setEnabled(false);
-
         _passwordValid = true;
+        goto end;
     }
 
+    _ui.passwords->setEnabled(true);
+
+    if (!_ui.resolutionWidget->isVisible() || _ui.cbSyncFromScratch->isChecked())
+        _passwordValid = !pass1.isEmpty() && pass1 == pass2 ? true : false;
+    else
+        _passwordValid = pass1 == pass2 ? true : false;
+
+end:
     wizard()->setProperty("encryptionState", value);
     _ui.encryptionNotice->setVisible(value);
     emit completeChanged();
