@@ -50,6 +50,10 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    #include "fusedialog.h"
+#endif
+
 namespace OCC {
 
 const char propertyAccountC[] = "oc_account";
@@ -1044,6 +1048,16 @@ void ownCloudGui::setPauseOnAllFoldersHelper(bool pause)
             accounts.append(a.data());
         }
     }
+
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    if (!Theme::instance()->isFuseAvailable() && !pause)
+        foreach (Folder *f, FolderMan::instance()->map())
+            if (accounts.contains(f->accountState()) && f->isEncrypted()) {
+                fuseInstallDialog();
+                break;
+            }
+#endif
+
     foreach (Folder *f, FolderMan::instance()->map()) {
         if (accounts.contains(f->accountState())) {
             f->setSyncPaused(pause);

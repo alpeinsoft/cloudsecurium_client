@@ -65,8 +65,9 @@ EncryptedFolder::~EncryptedFolder()
     LOG("killing dummy...\n");
     int rc;
 #ifdef __APPLE__
-    rc = QProcess::startDetached(QString("umount -f ") + this->mountPath());
-    LOG("after umount -f %s %d\n", this->mountPath().toUtf8().data(), rc);
+    QString cmd = QString("umount -f '%1'").arg(this->mountPath());
+    rc = system(cmd.toUtf8().data());
+    LOG("%s, rc = %d\n", cmd.toUtf8().data(), rc);
 #else
     cryptfs_ummount(this->cfs);
     LOG("after cryptfs_ummount\n");
