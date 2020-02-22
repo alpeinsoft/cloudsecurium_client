@@ -56,9 +56,21 @@ GeneralSettings::GeneralSettings(QWidget *parent)
 {
     _ui->setupUi(this);
 
+    // Setup minimum size for newFolderLimitCheckBox so it doesn't overlay
+    _ui->newFolderLimitCheckBox->adjustSize();
+    _ui->newFolderLimitCheckBox->setMinimumWidth(
+                _ui->newFolderLimitCheckBox->width());
+    _ui->newFolderLimitCheckBox->updateGeometry();
+
 #ifdef LOCAL_FOLDER_ENCRYPTION
-    if (Theme::instance()->isFuseAvailable())
+    if (Theme::instance()->isFuseAvailable()) {
         _ui->fuseInstallProposal->hide();
+    } else {
+        _ui->fuseInstallProposal->adjustSize();
+        _ui->fuseInstallProposal->setMinimumHeight(
+                    _ui->fuseInstallProposal->height());
+        _ui->fuseInstallProposal->updateGeometry();
+    }
 
     connect(
             _ui->fuseInstallButton,
@@ -91,6 +103,10 @@ GeneralSettings::GeneralSettings(QWidget *parent)
     _ui->aboutLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextBrowserInteraction);
     _ui->aboutLabel->setText(about);
     _ui->aboutLabel->setOpenExternalLinks(true);
+    _ui->aboutGroupBox->adjustSize();
+    _ui->aboutGroupBox->setMinimumHeight(
+                _ui->aboutGroupBox->height());
+    _ui->aboutGroupBox->updateGeometry();
 
     // About legal notice
     connect(_ui->legalNoticeButton, &QPushButton::clicked, this, &GeneralSettings::slotShowLegalNotice);
@@ -196,6 +212,11 @@ void GeneralSettings::slotUpdateInfo()
                                       updater->downloadState() != OCUpdater::DownloadComplete);
 
         _ui->autoCheckForUpdatesCheckBox->setChecked(ConfigFile().autoUpdateCheck());
+
+        _ui->updatesGroupBox->adjustSize();
+        _ui->updatesGroupBox->setMinimumHeight(
+                    _ui->updatesGroupBox->height());
+        _ui->updatesGroupBox->updateGeometry();
     } else {
         // can't have those infos from sparkle currently
         _ui->updatesGroupBox->setVisible(false);
