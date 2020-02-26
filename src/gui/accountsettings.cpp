@@ -59,6 +59,7 @@
 
 #ifdef LOCAL_FOLDER_ENCRYPTION
 #include "fusedialog.h"
+#include "encrypted_folder.h"
 #endif
 
 namespace OCC {
@@ -738,6 +739,12 @@ void AccountSettings::slotFolderWizardAccepted()
         folderWizard->property("targetPath").toString());
 
     {
+#ifdef LOCAL_FOLDER_ENCRYPTION
+        if (folderWizard->startFromScratch()) {
+            int rc = folderMan->startFromScratch(definition.localPath);
+            LOG("started from scratch %d\n", rc);
+        }
+#endif
         QDir dir(definition.localPath);
         if (!dir.exists()) {
             qCInfo(lcAccountSettings) << "Creating folder" << definition.localPath;
@@ -748,6 +755,15 @@ void AccountSettings::slotFolderWizardAccepted()
                 return;
             }
         }
+#ifdef LOCAL_FOLDER_ENCRYPTION
+        if (folderWizard->isEncrypt()) {
+            QString raw_password = folderWizard->password();
+            QByteArray password = raw_password.toUtf8();
+            EncryptedFolder::generateKey(definition.localPath, password.constData());
+            nullifyString(password);
+            nullifyString(raw_password);
+        }
+#endif
         FileSystem::setFolderMinimumPermissions(definition.localPath);
         Utility::setupFavLink(definition.localPath);
     }

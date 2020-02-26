@@ -60,6 +60,12 @@ QString FormatWarningsWizardPage::formatWarnings(const QStringList &warnings) co
 FolderWizardLocalPath::FolderWizardLocalPath(const AccountPtr &account)
     : FormatWarningsWizardPage()
     , _account(account)
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    , startFromScratch(false)
+    , password("")
+    , passwordValid(false)
+    , encryptionState(false)
+#endif
 {
     _ui.setupUi(this);
     registerField(QLatin1String("sourceFolder*"), _ui.localFolderLineEdit);
@@ -75,7 +81,141 @@ FolderWizardLocalPath::FolderWizardLocalPath(const AccountPtr &account)
 
     _ui.warnLabel->setTextFormat(Qt::RichText);
     _ui.warnLabel->hide();
+
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    connect(_ui.encryptionState, &QCheckBox::stateChanged, this, &FolderWizardLocalPath::slotEncryptionStateChanged);
+    connect(_ui.password1, &QLineEdit::textChanged, this, &FolderWizardLocalPath::slotPasswordChanged);
+    connect(_ui.password2, &QLineEdit::textChanged, this, &FolderWizardLocalPath::slotPasswordChanged);
+    connect(_ui.scratch, &QAbstractButton::clicked, this, &FolderWizardLocalPath::slotScratchClicked);
+    connect(_ui.preserve, &QAbstractButton::clicked, this, &FolderWizardLocalPath::slotPreserveClicked);
+
+    updateEncryptionUi(_ui.localFolderLineEdit->text());
+    _ui.preserve->setChecked(true);
+#else
+    _ui.encrypt->setVisible(false);
+    _ui.passwords->setVisible(false);
+#endif
 }
+
+#ifdef LOCAL_FOLDER_ENCRYPTION
+void FolderWizardLocalPath::updateEncryptionUi(QString path)
+{
+    _ui.password1->clear();
+    _ui.password2->clear();
+    _ui.encryptionState->setChecked(true);
+    _ui.encryptionState->setEnabled(true);
+    _ui.passwords->setEnabled(true);
+    _ui.resolutionWidget->setVisible(true);
+    if (startFromScratch)
+        _ui.scratch->setChecked(true);
+    else
+        _ui.preserve->setChecked(true);
+    passwordValid = false;
+    encryptionState = true;
+
+    const bool dirNotEmpty = QDir(path).entryList(QDir::AllEntries
+                    | QDir::NoDotAndDotDot).count() > 0;
+    if (!dirNotEmpty && !startFromScratch)
+        _ui.resolutionWidget->setVisible(false);
+
+    FolderMan *folder_manager = FolderMan::instance();
+    QString uncrypted_path = EncryptedFolder::uncryptPathByEncryptPath(path);
+    if (folder_manager->folderForPath(uncrypted_path)
+            || folder_manager->folderForPath(path)) {
+        LOG("Folder is already in sync\n");
+        _ui.passwords->setEnabled(false);
+        _ui.encryptionState->setEnabled(false);
+        _ui.encryptionState->setChecked(EncryptedFolder::checkKey(path));
+        _ui.resolutionWidget->setVisible(false);
+        passwordValid = false;
+        emit completeChanged();
+        return;
+    }
+
+    if (EncryptedFolder::checkKey(path) && !startFromScratch) {
+        LOG("Folder is already encrypted\n");
+        _ui.encryptionState->setEnabled(false);
+        _ui.passwords->setEnabled(false);
+        passwordValid = true;
+        encryptionState = false;
+
+        emit completeChanged();
+        return;
+    }
+
+    if (!QDir(path).exists() || !dirNotEmpty || startFromScratch) {
+        LOG("Folder can be encrypted\n");
+        passwordValid = false;
+
+        emit completeChanged();
+        return;
+    }
+
+    LOG("Folder can't be encrypted\n");
+    _ui.encryptionState->setEnabled(false);
+    _ui.encryptionState->setChecked(false);
+    _ui.passwords->setEnabled(false);
+    encryptionState = false;
+    passwordValid = true;
+
+    emit completeChanged();
+}
+
+void FolderWizardLocalPath::slotEncryptionStateChanged(bool value)
+{
+    QString pass1 = _ui.password1->text();
+    QString pass2 = _ui.password2->text();
+
+    if (!value) {
+        _ui.passwords->setEnabled(false);
+        passwordValid = true;
+        goto end;
+    }
+
+    _ui.passwords->setEnabled(true);
+    passwordValid = (!pass1.isEmpty() && pass1 == pass2) ? true : false;
+end:
+    encryptionState = value;
+    emit completeChanged();
+}
+
+void FolderWizardLocalPath::slotPasswordChanged(const QString &new_password)
+{
+    if (_ui.password1->text().isEmpty() || _ui.password2->text().isEmpty()) {
+        passwordValid = false;
+        QString str = tr(
+                "<p><small><strong>Error:</strong>Password is empty!"
+                "</small></p>");
+        _ui.passwords_label->setText(str);
+    } else if (_ui.password1->text() != _ui.password2->text()) {
+        passwordValid = false;
+        QString str = tr(
+                "<p><small><strong>Error:</strong>Passwords don't match!"
+                "</small></p>");
+        _ui.passwords_label->setText(str);
+    } else {
+        passwordValid = true;
+        QString str = tr("<p><small>Passwords match!</small></p>");
+        _ui.passwords_label->setText(str);
+        password = new_password;
+    }
+    emit completeChanged();
+}
+
+void FolderWizardLocalPath::slotPreserveClicked()
+{
+    startFromScratch = false;
+    updateEncryptionUi(_ui.localFolderLineEdit->text());
+    emit completeChanged();
+}
+
+void FolderWizardLocalPath::slotScratchClicked()
+{
+    startFromScratch = true;
+    updateEncryptionUi(QString(""));
+    emit completeChanged();
+}
+#endif
 
 FolderWizardLocalPath::~FolderWizardLocalPath()
 {
@@ -100,14 +240,20 @@ bool FolderWizardLocalPath::isComplete() const
         QDir::fromNativeSeparators(_ui.localFolderLineEdit->text()), serverUrl);
 
 
-    bool isOk = errorStr.isEmpty();
+    bool isOk = errorStr.isEmpty()
+#ifndef LOCAL_FOLDER_ENCRYPTION
+            ;
+#else
+            && passwordValid;
+#endif
+
     QStringList warnStrings;
-    if (!isOk) {
+    if (!isOk && !errorStr.isEmpty()) {
         warnStrings << errorStr;
     }
 
     _ui.warnLabel->setWordWrap(true);
-    if (isOk) {
+    if (isOk || warnStrings.isEmpty()) {
         _ui.warnLabel->hide();
         _ui.warnLabel->setText(QString());
     } else {
@@ -137,6 +283,9 @@ void FolderWizardLocalPath::slotChooseLocalFolder()
     if (!dir.isEmpty()) {
         // set the last directory component name as alias
         _ui.localFolderLineEdit->setText(QDir::toNativeSeparators(dir));
+#ifdef LOCAL_FOLDER_ENCRYPTION
+        updateEncryptionUi(dir);
+#endif
     }
     emit completeChanged();
 }
@@ -578,5 +727,22 @@ void FolderWizard::resizeEvent(QResizeEvent *event)
         }
     }
 }
+
+#ifdef LOCAL_FOLDER_ENCRYPTION
+QString FolderWizard::password()
+{
+    return _folderWizardSourcePage->password;
+}
+
+bool FolderWizard::startFromScratch()
+{
+    return _folderWizardSourcePage->startFromScratch;
+}
+
+bool FolderWizard::isEncrypt()
+{
+    return _folderWizardSourcePage->encryptionState;
+}
+#endif
 
 } // end namespace

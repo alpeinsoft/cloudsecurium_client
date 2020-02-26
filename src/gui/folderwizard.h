@@ -49,6 +49,7 @@ protected:
 class FolderWizardLocalPath : public FormatWarningsWizardPage
 {
     Q_OBJECT
+    friend class FolderWizard;
 public:
     explicit FolderWizardLocalPath(const AccountPtr &account);
     ~FolderWizardLocalPath();
@@ -60,11 +61,24 @@ public:
     void setFolderMap(const Folder::Map &fm) { _folderMap = fm; }
 protected slots:
     void slotChooseLocalFolder();
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    void updateEncryptionUi(QString foo);
+    void slotScratchClicked();
+    void slotPreserveClicked();
+    void slotPasswordChanged(const QString &new_password);
+    void slotEncryptionStateChanged(bool value);
+#endif
 
 private:
     Ui_FolderWizardSourcePage _ui;
     Folder::Map _folderMap;
     AccountPtr _account;
+#ifdef LOCAL_FOLDER_ENCRYPTION
+   bool passwordValid;
+   QString password;
+   bool encryptionState;
+   bool startFromScratch;
+#endif
 };
 
 
@@ -151,6 +165,12 @@ public:
 
     bool eventFilter(QObject *watched, QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+
+#ifdef LOCAL_FOLDER_ENCRYPTION
+    QString password();
+    bool startFromScratch();
+    bool isEncrypt();
+#endif
 
 private:
     FolderWizardLocalPath *_folderWizardSourcePage;
