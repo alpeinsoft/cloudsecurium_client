@@ -343,14 +343,14 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>OSXFUSE package is required to support local folder encryption.</string>
+           <string>FUSE package is required to support local folder encryption.</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="fuseInstallButton">
           <property name="text">
-           <string>Restart &amp;&amp; install OSXFUSE</string>
+           <string>Restart &amp;&amp; install FUSE</string>
           </property>
          </widget>
         </item>
