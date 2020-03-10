@@ -35,6 +35,9 @@
 #include <QDebug>
 #include "fusedialog.h"
 
+#include <QLocale>
+#include <locale.h>
+
 using namespace OCC;
 
 void warnSystray()
@@ -50,6 +53,12 @@ void warnSystray()
 int main(int argc, char **argv)
 {
     Q_INIT_RESOURCE(client);
+
+#ifdef _WIN32
+    QString new_locale = QLocale::system().name() + QString(".UTF-8");
+    LOG("Setting locale: %s\n", new_locale.toUtf8().data());
+    setlocale (LC_ALL, new_locale.toUtf8().data());
+#endif
 
     // OpenSSL 1.1.0: No explicit initialisation or de-initialisation is necessary.
 
