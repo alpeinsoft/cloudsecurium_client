@@ -88,7 +88,7 @@ OwncloudAdvancedSetupPage::OwncloudAdvancedSetupPage()
         _ui.confCheckBoxSize->hide();
         _ui.confSpinBox->hide();
         _ui.confTraillingSizeLabel->hide();
-    }
+    }    
 }
 
 void OwncloudAdvancedSetupPage::setupCustomization()
