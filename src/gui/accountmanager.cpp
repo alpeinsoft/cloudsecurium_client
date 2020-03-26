@@ -333,6 +333,7 @@ void AccountManager::deleteAccount(AccountState *account)
     account->account()->e2e()->forgetSensitiveData();
 
     emit accountRemoved(account);
+    emit removeAccountFolders(account);
 }
 
 AccountPtr AccountManager::createAccount()
