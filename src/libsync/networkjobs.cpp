@@ -393,7 +393,7 @@ bool LsColJob::finished()
 
 namespace {
     const char statusphpC[] = "status.php";
-    const char nextcloudDirC[] = "nextcloud/";
+    const char nextcloudDirC[] = "cloudsecurium/";
 }
 
 CheckServerJob::CheckServerJob(AccountPtr account, QObject *parent)

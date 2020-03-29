@@ -343,7 +343,7 @@ void AccountSettings::slotLockForEncryptionSuccess(const QByteArray& fileId, con
       QMessageBox::warning(nullptr, "Warning",
           "Could not generate the metadata for encryption, Unlocking the folder. \n"
           "This can be an issue with your OpenSSL libraries, please note that OpenSSL 1.1 is \n"
-          "not compatible with Nextcloud yet."
+          "not compatible with Cloudsecurium yet."
       );
       return;
     }
