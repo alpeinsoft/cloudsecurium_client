@@ -400,8 +400,9 @@ QString Theme::about() const
               .arg(APPLICATION_NAME);
 
     devString += tr("<p>Version %1. For more information please click <a href='%2'>here</a>.</p>")
-              .arg(QString::fromLatin1(MIRALL_STRINGIFY(MIRALL_VERSION)) + QString(" (%1)").arg(osName))
+              .arg(QString::fromLatin1(MIRALL_VERSION_STRING))
               .arg(helpUrl());
+    devString +=tr("<p>2020 © ALPEIN Software SWISS AG | Stein am Rhein, Switzerland</p>");
 
     return devString;
 }

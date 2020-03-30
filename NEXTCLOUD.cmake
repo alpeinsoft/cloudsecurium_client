@@ -26,7 +26,7 @@ option( WITH_CRASHREPORTER "Build crashreporter" OFF )
 ## Updater options
 option( BUILD_UPDATER "Build updater" OFF )
 
-option( WITH_PROVIDERS "Build with providers list" ON )
+option( WITH_PROVIDERS "Build with providers list" OFF )
 
 
 ## Theming options
