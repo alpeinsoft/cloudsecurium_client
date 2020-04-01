@@ -181,3 +181,7 @@ CPackOptions.cmake
 CPackSourceConfig.cmake
 
 compile_commands.json
+
+src/gui/LICENSE.txt
+src/gui/convert.exe
+
