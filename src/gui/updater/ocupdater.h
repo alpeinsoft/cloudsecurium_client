@@ -157,7 +157,7 @@ private slots:
 
 private:
     NSISUpdater::UpdateState updateStateOnStart();
-    void showDialog(const UpdateInfo &info);
+    int showDialog(const UpdateInfo &info);
     void versionInfoArrived(const UpdateInfo &info) override;
     QScopedPointer<QTemporaryFile> _file;
     QString _targetFile;

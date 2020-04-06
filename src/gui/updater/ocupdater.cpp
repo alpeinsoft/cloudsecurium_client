@@ -26,6 +26,7 @@
 #include <QtWidgets>
 
 #include <stdio.h>
+#include <common/utility.h>
 
 #define CURRENT_LC lcUpdater
 
@@ -150,7 +151,7 @@ QString OCUpdater::statusString() const
     case DownloadTimedOut:
         return tr("Could not check for new updates.");
     case UpdateOnlyAvailableThroughSystem:
-        return tr("New %1 version %2 is available. Please click <a href='%3'>here</a> to download the update.").arg(Theme::instance()->appNameGUI(), updateVersion, _updateInfo.web());
+        return tr("New %1 version %2 is available. Please click <a href='%3'>here</a> to download the update.").arg(Theme::instance()->appNameGUI(), updateVersion, _updateInfo.downloadUrl());
     case CheckingServer:
         return tr("Checking update server …");
     case Unknown:
@@ -189,8 +190,24 @@ void OCUpdater::slotStartInstaller()
     settings.setValue(autoUpdateAttemptedC, true);
     settings.sync();
     qCInfo(lcUpdater) << "Running updater" << updateFile;
-    QProcess::startDetached(updateFile, QStringList() << "/S"
-                                                      << "/launch");
+
+#if defined(Q_OS_MAC)
+    if (QProcess::startDetached(QString("open -a Installer ") + updateFile)) {
+        LOG("Installer runs successfully\n");
+        QApplication::quit();
+    } else {
+        LOG("Failed to start installer\n");
+        QMessageBox::critical(nullptr, "installer", "Can't run installer");
+    }
+#else
+    if (QDesktopServices::openUrl(QUrl::fromLocalFile(updateFile))) {
+        LOG("Installer runs successfully\n");
+        QApplication::quit();
+    } else {
+        LOG("Failed to start installer\n");
+        QMessageBox::critical(nullptr, "installer", "Can't run installer");
+    }
+#endif
 }
 
 void OCUpdater::checkForUpdate()
@@ -294,31 +311,35 @@ void NSISUpdater::versionInfoArrived(const UpdateInfo &info)
         || infoVersion <= seenVersion) {
         qCInfo(lcUpdater) << "Client is on latest version!";
         setDownloadState(UpToDate);
-    } else {
-        QString url = info.downloadUrl();
-        qint64 autoUpdateFailedVersion =
-            Helper::stringVersionToInt(settings.value(autoUpdateFailedVersionC).toString());
-        if (url.isEmpty() || _showFallbackMessage || infoVersion == autoUpdateFailedVersion) {
-            showDialog(info);
-        }
-        if (!url.isEmpty()) {
-            _targetFile = cfg.configPath() + url.mid(url.lastIndexOf('/'));
-            if (QFile(_targetFile).exists()) {
-                setDownloadState(DownloadComplete);
-            } else {
-                QNetworkReply *reply = qnam()->get(QNetworkRequest(QUrl(url)));
-                connect(reply, &QIODevice::readyRead, this, &NSISUpdater::slotWriteFile);
-                connect(reply, &QNetworkReply::finished, this, &NSISUpdater::slotDownloadFinished);
-                setDownloadState(Downloading);
-                _file.reset(new QTemporaryFile);
-                _file->setAutoRemove(true);
-                _file->open();
-            }
-        }
+        return;
     }
+
+    QString url = info.downloadUrl();
+    if (url.isEmpty()) {
+        setDownloadState(UpToDate);
+        return;
+    }
+
+    _targetFile = cfg.configPath() + url.mid(url.lastIndexOf('/'));
+    if (QFile(_targetFile).exists()) {
+        setDownloadState(DownloadComplete);
+        return;
+    }
+
+    if (showDialog(info)) {
+        QNetworkReply *reply = qnam()->get(QNetworkRequest(QUrl(url)));
+        connect(reply, &QIODevice::readyRead, this, &NSISUpdater::slotWriteFile);
+        connect(reply, &QNetworkReply::finished, this, &NSISUpdater::slotDownloadFinished);
+        _file.reset(new QTemporaryFile);
+        _file->setAutoRemove(true);
+        _file->open();
+        setDownloadState(Downloading);
+        return;
+    }
+    setDownloadState(UpToDate);
 }
 
-void NSISUpdater::showDialog(const UpdateInfo &info)
+int NSISUpdater::showDialog(const UpdateInfo &info)
 {
     // if the version tag is set, there is a newer version.
     QDialog *msgBox = new QDialog;
@@ -366,7 +387,7 @@ void NSISUpdater::showDialog(const UpdateInfo &info)
 
     layout->addWidget(bb);
 
-    msgBox->open();
+    return msgBox->exec();
 }
 
 NSISUpdater::UpdateState NSISUpdater::updateStateOnStart()

@@ -124,7 +124,7 @@ Updater *Updater::create()
 
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
     return new SparkleUpdater(updateBaseUrl.toString());
-#elif defined(Q_OS_WIN32)
+#elif defined(Q_OS_WIN32) || defined(Q_OS_MAC)
     // the best we can do is notify about updates
     return new NSISUpdater(updateBaseUrl);
 #else

@@ -55,7 +55,7 @@ QString UpdateInfo::downloadUrl() const
 
 UpdateInfo UpdateInfo::parseElement(const QDomElement &element, bool *ok)
 {
-    if (element.tagName() != QLatin1String("owncloudclient")) {
+    if (element.tagName() != QLatin1String("cloudsecuriumclient")) {
         qCCritical(lcUpdater) << "Expected 'owncloudclient', got '" << element.tagName() << "'.";
         if (ok)
             *ok = false;

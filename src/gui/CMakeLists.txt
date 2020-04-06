@@ -161,8 +161,9 @@ IF( APPLE )
 
     if(SPARKLE_FOUND AND BUILD_UPDATER)
        # Define this, we need to check in updater.cpp
-       add_definitions( -DHAVE_SPARKLE )
-       list(APPEND updater_SRCS updater/sparkleupdater_mac.mm)
+       # No more need in sparkle since NSISUpdater can handle both osx and win
+       # add_definitions( -DHAVE_SPARKLE )
+       # list(APPEND updater_SRCS updater/sparkleupdater_mac.mm)
    endif()
 ENDIF()
 
