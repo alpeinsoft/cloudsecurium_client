@@ -664,6 +664,8 @@ void OwncloudSetupWizard::slotAssistantFinished(int result)
                 _ocWizard->deletePasswordUi();
             }
 #endif
+            FileSystem::setFolderMinimumPermissions(localFolder);
+            Utility::setupFavLink(localFolder);
             qCInfo(lcWizard) << "Adding folder definition for" << localFolder << _remoteFolder;
             FolderDefinition folderDefinition;
             folderDefinition.localPath = localFolder;
