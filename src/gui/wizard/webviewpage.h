@@ -20,6 +20,8 @@ public:
     int nextId() const override;
     bool isComplete() const override;
 
+    void cleanupPage() override;
+
     AbstractCredentials* getCredentials() const override;
     void setConnected();
 

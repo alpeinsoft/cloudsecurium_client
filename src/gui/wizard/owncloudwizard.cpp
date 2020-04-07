@@ -208,6 +208,7 @@ void OwncloudWizard::successfulStep()
 
     case WizardCommon::Page_WebView:
         _webViewPage->setConnected();
+        _webViewPage->cleanupPage();
         break;
 
     case WizardCommon::Page_AdvancedSetup:

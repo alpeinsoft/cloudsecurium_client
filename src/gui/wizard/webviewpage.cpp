@@ -50,6 +50,13 @@ void WebViewPage::initializePage() {
     _webView->setUrl(QUrl(url));
 }
 
+void WebViewPage::cleanupPage() {
+    QString url = _ocWizard->ocUrl();
+    url += "/index.php/login/flow";
+    _webView->setUrl(QUrl(url));
+    AbstractCredentialsWizardPage::cleanupPage();
+}
+
 int WebViewPage::nextId() const {
     return WizardCommon::Page_AdvancedSetup;
 }
