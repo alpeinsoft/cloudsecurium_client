@@ -221,7 +221,7 @@ void Folder::checkLocalPath()
             return;
         }
         _canonicalLocalPath = this->uncryptedPath();
-        LOG("canonicalLocalPath is now %s\n", _canonicalLocalPath.toUtf8().data());
+        fi = QFileInfo(_canonicalLocalPath);
     }
     else {
 #endif
@@ -242,6 +242,10 @@ void Folder::checkLocalPath()
 #endif
     if (fi.isDir() && fi.isReadable()) {
         qCDebug(lcFolder) << "Checked local path ok";
+
+        QFile excludes(_canonicalLocalPath + ".sync-exclude.lst");
+        if (excludes.open(QIODevice::NewOnly))
+            excludes.close();
     } else {
         // Check directory again
         if (!FileSystem::fileExists(_definition.localPath, fi)) {
