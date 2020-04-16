@@ -244,8 +244,10 @@ void Folder::checkLocalPath()
         qCDebug(lcFolder) << "Checked local path ok";
 
         QFile excludes(_canonicalLocalPath + ".sync-exclude.lst");
-        if (excludes.open(QIODevice::NewOnly))
+        if (!excludes.exists()) {
+            excludes.open(QIODevice::WriteOnly);
             excludes.close();
+        }
     } else {
         // Check directory again
         if (!FileSystem::fileExists(_definition.localPath, fi)) {
