@@ -579,4 +579,9 @@ void OwncloudAdvancedSetupPage::slotCleanSyncClicked()
     emit completeChanged();
 }
 
+void OwncloudAdvancedSetupPage::cleanupPage()
+{
+    qobject_cast<OwncloudWizard *>(wizard())->resetWebview();
+}
+
 } // namespace OCC

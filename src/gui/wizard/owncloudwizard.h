@@ -57,6 +57,7 @@ public:
 
     OwncloudWizard(QWidget *parent = nullptr);
 
+    void resetWebview();
     void setAccount(AccountPtr account);
     AccountPtr account() const;
     void setOCUrl(const QString &);

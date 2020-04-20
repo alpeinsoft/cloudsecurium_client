@@ -37,6 +37,7 @@ public:
 
     bool isComplete() const override;
     void initializePage() override;
+    void cleanupPage() override;
     int nextId() const override;
     bool validatePage() override;
     QString localFolder() const;
