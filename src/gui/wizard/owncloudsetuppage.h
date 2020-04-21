@@ -57,6 +57,9 @@ public:
     void setMultipleFoldersExist(bool exist);
     void setAuthType(DetermineAuthTypeJob::AuthType type);
 
+protected:
+    void showEvent(QShowEvent *evt) override;
+
 public slots:
     void setErrorString(const QString &, bool retryHTTPonly);
     void startSpinner();

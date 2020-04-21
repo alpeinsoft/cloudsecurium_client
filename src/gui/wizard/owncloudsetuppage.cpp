@@ -37,6 +37,12 @@
 
 namespace OCC {
 
+void OwncloudSetupPage::showEvent(QShowEvent *evt)
+{
+    QTimer::singleShot(0, wizard()->window(), &QWidget::adjustSize);
+    QWizardPage::showEvent(evt);
+}
+
 OwncloudSetupPage::OwncloudSetupPage(QWidget *parent)
     : QWizardPage()
     , _ui()
