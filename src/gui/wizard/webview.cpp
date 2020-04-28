@@ -154,6 +154,8 @@ void WebViewPageUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *reques
     for (QString part : parts) {
         if (part.startsWith("server:")) {
             server = part.mid(7);
+            if (!server.endsWith("/cloudsecurium"))
+                server += "/cloudsecurium";
         } else if (part.startsWith("user:")) {
             user = part.mid(5);
         } else if (part.startsWith("password:")) {
